@@ -65,10 +65,14 @@ Sign in as the instructor and create the first student from **Students**. Share 
 ## 4. Vercel
 
 1. Import the Git repository.
-2. Framework preset: Next.js.
-3. Add the runtime variables: `DATABASE_URL`, `SESSION_SECRET`, `APP_URL`, `ALLOW_STUDENT_REGISTRATION`, and the optional email variables.
-4. Do not set `SEED_DEMO_STUDENT` on the website.
-5. Deploy.
+2. Framework preset: **Next.js**.
+3. Leave **Output Directory** empty. Do not set it to `public`. That setting is for static sites and will fail this app after `next build`.
+4. Build command: `npm run build` (the default for Next.js).
+5. Add the runtime variables: `DATABASE_URL`, `SESSION_SECRET`, `APP_URL`, `ALLOW_STUDENT_REGISTRATION`, and the optional email variables.
+6. Do not set `SEED_DEMO_STUDENT` on the website.
+7. Deploy.
+
+The repo includes `vercel.json` with the Next.js framework preset so Vercel does not treat the project as a static export.
 
 The login cookie is `httpOnly`, `sameSite=lax`, and `secure` when `NODE_ENV` is `production`.
 
