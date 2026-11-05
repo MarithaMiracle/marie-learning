@@ -256,20 +256,6 @@ export default async function HomePage() {
               })}
             </div>
 
-            <dl className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-5">
-              {[
-                ["16", "weeks"],
-                ["32", "live sessions"],
-                ["2", "sessions / week"],
-                ["48", "guided hours"],
-                ["1", "capstone"],
-              ].map(([value, label]) => (
-                <div key={label} className="rounded-2xl border border-white/10 bg-white/5 px-3 py-4 text-center">
-                  <dt className="text-2xl font-bold text-primary sm:text-3xl">{value}</dt>
-                  <dd className="mt-1 text-xs text-white/65 sm:text-sm">{label}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </section>
 
