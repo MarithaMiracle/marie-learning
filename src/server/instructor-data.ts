@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { CurrentUser } from "@/lib/auth";
 import { withActor } from "@/lib/db/client";
 import {
@@ -41,6 +41,24 @@ const submissionSummary = {
   submittedAt: submissions.submittedAt,
   reviewedAt: submissions.reviewedAt,
 };
+
+export async function listPendingInvites(user: CurrentUser) {
+  return withActor(user, async (tx) => {
+    const result = await tx.execute(sql`select id, email, expires_at, created_at from list_user_invites()`);
+    const rows = (Array.isArray(result) ? result : ((result as { rows?: unknown[] }).rows ?? [])) as {
+      id: string;
+      email: string;
+      expires_at: string | Date;
+      created_at: string | Date;
+    }[];
+    return rows.map((row) => ({
+      id: row.id,
+      email: row.email,
+      expiresAt: new Date(row.expires_at),
+      createdAt: new Date(row.created_at),
+    }));
+  });
+}
 
 export async function getInstructorDashboard(user: CurrentUser) {
   return withActor(user, async (tx) => {

@@ -75,6 +75,30 @@ export async function registerAction(input: { fullName: string; email: string; p
   redirect(destination);
 }
 
+export async function acceptInviteAction(input: { token: string; fullName: string; password: string }): Promise<ActionResult> {
+  const parsed = z
+    .object({
+      token: z.string().min(20),
+      fullName: z.string().trim().min(2, "Enter your full name.").max(120),
+      password: z.string().min(8, "Use at least 8 characters."),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check your details." };
+  try {
+    const row = await withActor(null, async (tx) => {
+      const result = await tx.execute(
+        sql`select * from accept_user_invite(${parsed.data.token}, ${parsed.data.fullName}, ${parsed.data.password})`,
+      );
+      return firstRow<AccountRow>(result);
+    });
+    if (!row) return { ok: false, error: "This invite link is invalid or has expired." };
+    await setSession(mapAccount(row));
+  } catch (error) {
+    return { ok: false, error: dbErrorMessage(error, "This invite link is invalid or has expired.") };
+  }
+  redirect("/student/onboarding");
+}
+
 export async function forgotPasswordAction(email: string): Promise<ActionResult<{ devLink?: string }>> {
   const parsed = z.string().trim().email().safeParse(email);
   if (!parsed.success) return { ok: false, error: "Enter the email address on your account." };

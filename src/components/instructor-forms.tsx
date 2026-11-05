@@ -8,10 +8,12 @@ import { commonTimeZones } from "@/lib/time";
 import {
   addInstructorNote,
   createStudentAccount,
+  inviteStudent,
   moveLesson,
   moveModule,
   reviewShortAnswer,
   reviewSubmission,
+  revokeStudentInvite,
   saveAnnouncement,
   cancelClass,
   saveClass,
@@ -57,6 +59,90 @@ export function CreateStudentForm() {
       {done ? <p className="text-sm text-success">Student account created and enrolled.</p> : null}
       <Button type="submit" disabled={pending}>{pending ? "Creating" : "Create student"}</Button>
     </form>
+  );
+}
+
+export function InviteStudentForm() {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [pending, start] = useTransition();
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const email = String(new FormData(form).get("email") ?? "");
+        start(async () => {
+          const result = await inviteStudent({ email });
+          if (!result.ok) {
+            setError(result.error);
+            setInviteUrl(null);
+          } else {
+            setError(null);
+            setCopied(false);
+            setInviteUrl(result.data?.inviteUrl ?? null);
+            form.reset();
+            router.refresh();
+          }
+        });
+      }}
+    >
+      <Field label="Student email" hint="Send the link to this address yourself. No email is sent for you yet.">
+        <TextInput name="email" type="email" required />
+      </Field>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      <Button type="submit" disabled={pending}>{pending ? "Creating invite" : "Create invite link"}</Button>
+      {inviteUrl ? (
+        <div className="rounded-xl bg-slate-50 p-3">
+          <p className="text-sm font-semibold text-ink">Share this link with the student</p>
+          <p className="mt-1 break-all text-xs text-muted">{inviteUrl}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="mt-2"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(inviteUrl);
+                setCopied(true);
+              } catch {
+                setCopied(false);
+              }
+            }}
+          >
+            {copied ? "Copied" : "Copy link"}
+          </Button>
+          <p className="mt-2 text-xs text-muted">The link expires in 7 days and can be used once.</p>
+        </div>
+      ) : null}
+    </form>
+  );
+}
+
+export function PendingInviteRow({ inviteId, email }: { inviteId: string; email: string }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <div className="flex items-center justify-between gap-3 border-t border-line py-2 first:border-t-0">
+      <p className="min-w-0 flex-1 truncate text-sm text-muted">{email}</p>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            await revokeStudentInvite(inviteId);
+            router.refresh();
+          })
+        }
+      >
+        {pending ? "Revoking" : "Revoke"}
+      </Button>
+    </div>
   );
 }
 

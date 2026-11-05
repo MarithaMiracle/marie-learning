@@ -6,7 +6,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { assessLessonContent } from "@/lib/completeness";
 import type { InstructorGuide, LessonContent, ProjectGuide } from "@/lib/content-types";
-import { withActor, type Tx } from "@/lib/db/client";
+import { withActor, firstRow, type Tx } from "@/lib/db/client";
 import {
   announcements,
   assignmentSolutions,
@@ -57,6 +57,38 @@ export async function createStudentAccount(input: { fullName: string; email: str
   try {
     await withActor(user, async (tx) => {
       await tx.execute(sql`select * from create_student_account(${parsed.data.email}, ${parsed.data.password}, ${parsed.data.fullName})`);
+    });
+    revalidatePath("/instructor/students");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: dbErrorMessage(error) };
+  }
+}
+
+export async function inviteStudent(input: { email: string }): Promise<ActionResult<{ inviteUrl: string }>> {
+  const user = await requireUser("instructor");
+  const parsed = z.object({ email: z.string().trim().email() }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Enter a valid email address." };
+  try {
+    const token = await withActor(user, async (tx) => {
+      const result = await tx.execute(sql`select token from create_user_invite(${parsed.data.email})`);
+      return firstRow<{ token: string }>(result)?.token ?? "";
+    });
+    if (!token) return { ok: false, error: "The invite could not be created." };
+    revalidatePath("/instructor/students");
+    const base = process.env.APP_URL ?? "http://localhost:3000";
+    return { ok: true, data: { inviteUrl: `${base}/invite/${token}` } };
+  } catch (error) {
+    return { ok: false, error: dbErrorMessage(error) };
+  }
+}
+
+export async function revokeStudentInvite(inviteId: string): Promise<ActionResult> {
+  const user = await requireUser("instructor");
+  if (!isUuid(inviteId)) return { ok: false, error: "That invite could not be found." };
+  try {
+    await withActor(user, async (tx) => {
+      await tx.execute(sql`select revoke_user_invite(${inviteId}::uuid)`);
     });
     revalidatePath("/instructor/students");
     return { ok: true };

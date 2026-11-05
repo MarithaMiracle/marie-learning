@@ -8,7 +8,7 @@ import { z } from "zod";
 import { PasswordInput } from "@/components/password-input";
 import { Button, Field, TextInput } from "@/components/ui";
 import { commonTimeZones } from "@/lib/time";
-import { changePasswordAction, forgotPasswordAction, loginAction, registerAction, resetPasswordAction } from "@/server/auth-actions";
+import { acceptInviteAction, changePasswordAction, forgotPasswordAction, loginAction, registerAction, resetPasswordAction } from "@/server/auth-actions";
 import { saveOnboarding, updateStudentSettings } from "@/server/student-actions";
 
 const loginSchema = z.object({
@@ -67,6 +67,40 @@ export function RegisterForm() {
       </Field>
       <Field label="Email" error={form.formState.errors.email?.message}>
         <TextInput type="email" autoComplete="email" {...form.register("email")} />
+      </Field>
+      <Field label="Password" hint="At least 8 characters." error={form.formState.errors.password?.message}>
+        <PasswordInput autoComplete="new-password" {...form.register("password")} />
+      </Field>
+      {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
+      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        {form.formState.isSubmitting ? "Creating account" : "Create account"}
+      </Button>
+    </form>
+  );
+}
+
+const inviteSchema = z.object({
+  fullName: z.string().trim().min(2, "Enter your full name."),
+  password: z.string().min(8, "Use at least 8 characters."),
+});
+
+export function AcceptInviteForm({ token }: { token: string }) {
+  const form = useForm<z.infer<typeof inviteSchema>>({
+    resolver: zodResolver(inviteSchema),
+    defaultValues: { fullName: "", password: "" },
+  });
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={form.handleSubmit(async (values) => {
+        const result = await acceptInviteAction({ token, ...values });
+        if (result && !result.ok) setError(result.error);
+      })}
+      noValidate
+    >
+      <Field label="Full name" error={form.formState.errors.fullName?.message}>
+        <TextInput autoComplete="name" {...form.register("fullName")} />
       </Field>
       <Field label="Password" hint="At least 8 characters." error={form.formState.errors.password?.message}>
         <PasswordInput autoComplete="new-password" {...form.register("password")} />

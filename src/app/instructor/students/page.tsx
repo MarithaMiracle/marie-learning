@@ -1,18 +1,18 @@
 import Link from "next/link";
-import { CreateStudentForm } from "@/components/instructor-forms";
+import { CreateStudentForm, InviteStudentForm, PendingInviteRow } from "@/components/instructor-forms";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { percent } from "@/lib/utils";
-import { listStudents } from "@/server/instructor-data";
+import { listPendingInvites, listStudents } from "@/server/instructor-data";
 
 export const metadata = { title: "Students" };
 
 export default async function StudentsPage() {
   const user = await requireUser("instructor");
-  const students = await listStudents(user);
+  const [students, invites] = await Promise.all([listStudents(user), listPendingInvites(user)]);
   return (
     <div>
-      <PageHeader title="Students" description="Create an account, then the student signs in and completes onboarding." />
+      <PageHeader title="Students" description="Invite a student to create their own account, or create one with a temporary password." />
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <div className="space-y-3">
           {students.map((item) => (
@@ -34,10 +34,26 @@ export default async function StudentsPage() {
           ))}
           {students.length === 0 ? <p className="text-sm text-muted">No students yet.</p> : null}
         </div>
-        <Card className="h-fit p-5">
-          <h2 className="mb-3 font-bold">Add a student</h2>
-          <CreateStudentForm />
-        </Card>
+        <div className="space-y-4">
+          <Card className="h-fit p-5">
+            <h2 className="mb-3 font-bold">Invite a student</h2>
+            <InviteStudentForm />
+          </Card>
+          {invites.length > 0 ? (
+            <Card className="h-fit p-5">
+              <h2 className="mb-2 font-bold">Pending invites</h2>
+              <div>
+                {invites.map((invite) => (
+                  <PendingInviteRow key={invite.id} inviteId={invite.id} email={invite.email} />
+                ))}
+              </div>
+            </Card>
+          ) : null}
+          <Card className="h-fit p-5">
+            <h2 className="mb-3 font-bold">Add a student</h2>
+            <CreateStudentForm />
+          </Card>
+        </div>
       </div>
     </div>
   );

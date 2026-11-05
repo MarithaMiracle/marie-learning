@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import postgres from "postgres";
 import { adminPostgresOptions, required } from "./env";
@@ -29,20 +29,28 @@ async function main() {
       applied_at timestamptz NOT NULL DEFAULT now()
     )
   `);
-  const applied = await admin<{ id: string }[]>`
-    SELECT id FROM schema_migrations WHERE id = '001_init'
-  `;
-  if (applied.length > 0) {
-    await admin.end();
-    console.log("Database schema is already applied.");
-    return;
+  const applied = await admin<{ id: string }[]>`SELECT id FROM schema_migrations`;
+  const done = new Set(applied.map((row) => row.id));
+  const dir = resolve(process.cwd(), "drizzle");
+  const files = readdirSync(dir)
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
+
+  let count = 0;
+  for (const file of files) {
+    const id = file.replace(/\.sql$/, "");
+    if (done.has(id)) continue;
+    const sql = readFileSync(resolve(dir, file), "utf8");
+    await admin.begin(async (tx) => {
+      await tx.unsafe(sql);
+      await tx`INSERT INTO schema_migrations (id) VALUES (${id})`;
+    });
+    count += 1;
+    console.log(`Applied ${id}.`);
   }
 
-  const sql = readFileSync(resolve(process.cwd(), "drizzle/001_init.sql"), "utf8");
-  await admin.unsafe(sql);
-  await admin`INSERT INTO schema_migrations (id) VALUES ('001_init')`;
   await admin.end();
-  console.log("Database schema is ready.");
+  console.log(count > 0 ? `Database schema is ready. ${count} migration(s) applied.` : "Database schema is already applied.");
 }
 
 main().catch((error) => {

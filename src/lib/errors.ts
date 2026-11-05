@@ -6,6 +6,7 @@ const known = [
   "The programme is not ready yet",
   "Current password is incorrect",
   "This reset link is invalid or has expired",
+  "This invite link is invalid or has expired",
   "Sign in as a student to take this quiz",
   "This quiz is not available",
   "This lesson is not available",
@@ -17,6 +18,7 @@ const known = [
   "This submission has been accepted",
   "Files must be 2 MB or smaller",
   "Only an instructor can create this account",
+  "Only an instructor can invite a student",
   "Account not found",
   "Submit your answers as a list",
 ];
