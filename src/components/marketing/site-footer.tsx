@@ -12,46 +12,60 @@ export function SiteFooter({
 }) {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-line bg-white">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
+    <footer className="bg-navy text-white">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
         <div>
-          <Logo />
-          <p className="mt-4 max-w-sm text-sm leading-6 text-muted">{programme.description}</p>
+          <Logo tone="light" />
+          <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">{programme.description}</p>
         </div>
         <nav aria-label="Footer">
-          <p className="text-sm font-bold text-navy">On this page</p>
+          <p className="text-sm font-bold text-white">On this page</p>
           <ul className="mt-3 space-y-2 text-sm">
             {publicNavLinks.map((link) => (
               <li key={link.href}>
-                <a href={link.href} className="text-muted hover:text-primary">{link.label}</a>
+                <a href={link.href} className="text-slate-300 hover:text-primary">
+                  {link.label}
+                </a>
               </li>
             ))}
           </ul>
         </nav>
         <nav aria-label="Account and policies">
-          <p className="text-sm font-bold text-navy">Account</p>
+          <p className="text-sm font-bold text-white">Account</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li>
               {signedInHref ? (
-                <Link href={signedInHref} className="text-muted hover:text-primary">Go to dashboard</Link>
+                <Link href={signedInHref} className="text-slate-300 hover:text-primary">
+                  Go to dashboard
+                </Link>
               ) : (
-                <Link href="/login" className="text-muted hover:text-primary">Log in</Link>
+                <Link href="/login" className="text-slate-300 hover:text-primary">
+                  Log in
+                </Link>
               )}
             </li>
             {signedInHref ? null : (
               <li>
-                <Link href="/register" className="text-muted hover:text-primary">
+                <Link href="/register" className="text-slate-300 hover:text-primary">
                   {registrationOpen ? "Get Started" : "Registration"}
                 </Link>
               </li>
             )}
-            <li><Link href="/privacy" className="text-muted hover:text-primary">Privacy Policy</Link></li>
-            <li><Link href="/terms" className="text-muted hover:text-primary">Terms of Service</Link></li>
+            <li>
+              <Link href="/privacy" className="text-slate-300 hover:text-primary">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/terms" className="text-slate-300 hover:text-primary">
+                Terms of Service
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>
-      <div className="border-t border-line">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-muted sm:px-6">
+      <div className="border-t border-white/10">
+        <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-slate-400 sm:px-6">
           © {year} Marie Learning. Questions about a place on the programme go to your instructor.
         </p>
       </div>

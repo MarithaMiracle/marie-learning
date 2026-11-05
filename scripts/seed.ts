@@ -7,7 +7,7 @@ import type { ModuleSeed } from "../src/lib/content-types";
 import { assessLessonSeed } from "../src/lib/completeness";
 import { programme } from "../src/lib/catalogue";
 import { resources } from "../content/resources";
-import { required } from "./env";
+import { adminPostgresOptions, required } from "./env";
 
 const NAMESPACE = "8c2e1b4a-6d3f-4a8e-9c1b-2d4e6f8a0b1c";
 const cid = (key: string) => uuidv5(key, NAMESPACE);
@@ -40,7 +40,7 @@ async function loadCurriculum(): Promise<ModuleSeed[]> {
 }
 
 async function main() {
-  const admin = postgres(required("DATABASE_ADMIN_URL"), { max: 1, onnotice: () => undefined });
+  const admin = postgres(required("DATABASE_ADMIN_URL"), adminPostgresOptions());
   await admin`SELECT set_config('app.trusted_password_update', '1', false)`;
   await admin`SELECT set_config('app.role', 'instructor', false)`;
   const force = process.env.SEED_FORCE === "true";

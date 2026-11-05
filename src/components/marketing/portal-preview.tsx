@@ -1,6 +1,6 @@
 export function PortalPreview() {
   return (
-    <figure className="overflow-hidden rounded-[1.75rem] border border-line bg-white shadow-sm">
+    <figure className="overflow-hidden bg-white">
       <figcaption className="border-b border-line px-5 py-3 text-xs font-semibold text-muted">
         A sample of the student home. No real student is shown.
       </figcaption>

@@ -7,11 +7,29 @@ type Database = PostgresJsDatabase<typeof schema>;
 
 const globalForDb = globalThis as unknown as { mariePg?: ReturnType<typeof postgres>; marieDb?: Database };
 
+function connectionNeedsSsl(url: string) {
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname;
+    const local = host === "localhost" || host === "127.0.0.1" || host === "::1";
+    const mode = (parsed.searchParams.get("sslmode") ?? "").toLowerCase();
+    if (mode === "require" || mode === "verify-ca" || mode === "verify-full") return true;
+    if (mode === "disable") return false;
+    return !local;
+  } catch {
+    return true;
+  }
+}
+
 function connection() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
   if (!globalForDb.mariePg) {
-    globalForDb.mariePg = postgres(url, { max: 10, prepare: false });
+    globalForDb.mariePg = postgres(url, {
+      max: 10,
+      prepare: false,
+      ...(connectionNeedsSsl(url) ? { ssl: "require" as const } : {}),
+    });
   }
   return globalForDb.mariePg;
 }

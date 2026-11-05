@@ -43,6 +43,10 @@ npm run db:seed
 
 Set `SEED_DEMO_STUDENT=true` before seeding if you want a local student account for testing. Set `SEED_RESET_PASSWORDS=true` only when you intend to replace the instructor or demo student password from `.env.local`.
 
+### Hosted database (Supabase)
+
+To use Supabase Postgres instead of a local database, put the project’s Direct or Session URI (with `?sslmode=require`) in `DATABASE_ADMIN_URL` and `DATABASE_URL` as described in [`.env.example`](.env.example), then run `npm run db:migrate` and `npm run db:seed` from your computer. Skip `createdb` — Supabase already provides the `postgres` database. Full connection and Vercel notes are in [docs/deployment.md](docs/deployment.md).
+
 ## First accounts
 
 The instructor is created from `INSTRUCTOR_EMAIL`, `INSTRUCTOR_PASSWORD`, and `INSTRUCTOR_NAME`.

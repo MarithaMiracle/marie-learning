@@ -1,18 +1,21 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import postgres from "postgres";
-import { required } from "./env";
+import { adminPostgresOptions, required } from "./env";
 
 async function main() {
-  const admin = postgres(required("DATABASE_ADMIN_URL"), { max: 1, onnotice: () => undefined });
+  const admin = postgres(required("DATABASE_ADMIN_URL"), adminPostgresOptions());
   const password = required("APP_DB_PASSWORD").replaceAll("'", "''");
   if (password.length < 16) throw new Error("APP_DB_PASSWORD must be at least 16 characters.");
 
+  // NOSUPERUSER/NOBYPASSRLS are set only at CREATE time. Supabase's postgres
+  // role cannot ALTER those attributes on an existing role.
   await admin.unsafe(`
     DO $$
     BEGIN
       IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'marie_app') THEN
-        CREATE ROLE marie_app LOGIN PASSWORD '${password}';
+        CREATE ROLE marie_app LOGIN PASSWORD '${password}'
+          NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
       ELSE
         ALTER ROLE marie_app WITH LOGIN PASSWORD '${password}';
       END IF;

@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 
 export function Mark({ className }: { className?: string }) {
   return (
-    <span className={cn("relative inline-block h-8 w-8 shrink-0", className)}>
-      <Image src={mark} alt="" fill sizes="32px" className="object-contain" />
+    <span className={cn("relative inline-block h-10 w-10 shrink-0 sm:h-11 sm:w-11", className)}>
+      <Image src={mark} alt="" fill sizes="44px" className="object-contain" />
     </span>
   );
 }
@@ -15,11 +15,10 @@ export function Logo({ tone = "dark" }: { tone?: "dark" | "light" }) {
   const ink = tone === "light" ? "text-white" : "text-navy";
 
   return (
-    <Link href="/#top" className="inline-flex items-center gap-2.5">
+    <Link href="/#top" className="inline-flex items-center gap-3">
       <Mark />
-      <span className={`text-[17px] leading-none tracking-[-0.035em] ${ink}`}>
-        <span className="font-bold">Marie</span>
-        <span className="font-normal"> Learning</span>
+      <span className={`text-[20px] font-bold leading-none tracking-[-0.035em] sm:text-[22px] ${ink}`}>
+        Marie Learning
       </span>
     </Link>
   );

@@ -12,7 +12,9 @@ BEGIN
   END IF;
 END $$;
 
-ALTER ROLE marie_app NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
+-- Do not ALTER ROLE … NOSUPERUSER here. On Supabase the postgres role is not a
+-- superuser, so changing SUPERUSER/NOSUPERUSER attributes is rejected. The
+-- migrate script creates marie_app with NOSUPERUSER NOBYPASSRLS already set.
 
 CREATE TABLE programmes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

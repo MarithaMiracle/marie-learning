@@ -1,11 +1,15 @@
 import postgres from "postgres";
-import { required } from "./env";
+import { adminPostgresOptions, required } from "./env";
 
 async function main() {
-  const url = new URL(required("DATABASE_ADMIN_URL"));
-  const database = url.pathname.replace(/^\//, "");
-  url.pathname = "/postgres";
-  const admin = postgres(url.toString(), { max: 1 });
+  const source = new URL(required("DATABASE_ADMIN_URL"));
+  const database = source.pathname.replace(/^\//, "").split("?")[0] ?? "";
+  if (!database || database === "postgres") {
+    console.log("Supabase and many hosts already provide a postgres database. Skip create-db and run npm run db:migrate.");
+    return;
+  }
+  source.pathname = "/postgres";
+  const admin = postgres(source.toString(), adminPostgresOptions());
   const existing = await admin<{ exists: boolean }[]>`
     SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ${database}) AS exists
   `;

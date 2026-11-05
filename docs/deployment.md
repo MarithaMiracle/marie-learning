@@ -4,12 +4,57 @@ The app is a Next.js application. It can run on Vercel with Neon, Supabase Postg
 
 The schema uses `pgcrypto` for password hashing (`crypt`, `gen_salt`) and for reset tokens (`gen_random_bytes`). New row ids use `gen_random_uuid()`, which is built into PostgreSQL 13 and newer.
 
+Authentication is handled by the app (signed cookies and `pgcrypto` passwords). You do not need Supabase Auth, the Supabase JS client, or Supabase Storage for this release.
+
 ## 1. Create the database
 
-On Neon, Supabase, or another host:
+### Local PostgreSQL
+
+Create an empty database, then continue from step 2 with local URLs in `.env.local`.
+
+```bash
+createdb marie_learning
+# or: npm run db:create
+```
+
+### Supabase Postgres
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open **Project Settings → Database** and copy the URI connection strings.
+3. Put the **postgres** user URI into `DATABASE_ADMIN_URL`. Use the **Direct** connection (`db.<project-ref>.supabase.co:5432`) or the **Session** pooler for migrate and seed. Always append `?sslmode=require` if it is not already present.
+4. Choose a long `APP_DB_PASSWORD` (16+ characters). Use the same value in `APP_DB_PASSWORD` and in the password part of `DATABASE_URL`.
+5. After migrate creates the `marie_app` role, set `DATABASE_URL` to the same host and database (`postgres` on Supabase) with user `marie_app` and that password, plus `?sslmode=require`.
+
+Example shapes (replace the password and project ref):
+
+```bash
+DATABASE_ADMIN_URL=postgresql://postgres:YOUR_DB_PASSWORD@db.YOUR_REF.supabase.co:5432/postgres?sslmode=require
+DATABASE_URL=postgresql://marie_app:YOUR_APP_DB_PASSWORD@db.YOUR_REF.supabase.co:5432/postgres?sslmode=require
+APP_DB_PASSWORD=YOUR_APP_DB_PASSWORD
+```
+
+**Pooler notes**
+
+| Connection | Port | Use for |
+|---|---|---|
+| Direct | 5432 on `db.<ref>.supabase.co` | Migrate, seed, local app |
+| Session pooler | 5432 on `*.pooler.supabase.com` | Migrate, seed, local app |
+| Transaction pooler | 6543 on `*.pooler.supabase.com` | Next.js runtime on Vercel only |
+
+Do not run `npm run db:migrate` or `npm run db:seed` through the transaction pooler. Those scripts need session-scoped settings and DDL.
+
+If the pooler requires a dotted username, use `postgres.<project-ref>` for admin and `marie_app.<project-ref>` for the app role.
+
+The Node clients enable SSL automatically for non-localhost hosts and keep `prepare: false` so the transaction pooler works at runtime.
+
+If `db.<ref>.supabase.co` does not resolve on your network (some networks only get an IPv6 address for Direct), use the Session pooler URIs above instead.
+
+On Supabase, the `postgres` role is not a full superuser. The migrate script creates `marie_app` with the right attributes at `CREATE ROLE` time and does not run `ALTER ROLE … NOSUPERUSER` (that statement is rejected on Supabase).
+
+### Other hosts (Neon, etc.)
 
 1. Create a database.
-2. Copy an administrator connection string into `DATABASE_ADMIN_URL`. The user must be allowed to create a role and run the migration.
+2. Copy an administrator connection string into `DATABASE_ADMIN_URL`. The user must be allowed to create a role and run the migration. Include SSL as required by the host.
 3. Choose a long `APP_DB_PASSWORD`.
 4. Build `DATABASE_URL` for user `marie_app` with that password and the same host, database, and SSL options.
 
@@ -62,6 +107,12 @@ Seeding needs the 16 files in `content/weeks`. Run `npm run check:content` first
 
 Sign in as the instructor and create the first student from **Students**. Share the temporary password through a private channel. Ask the student to change it in **Settings**.
 
+On Supabase you can confirm the role exists in the SQL editor:
+
+```sql
+SELECT rolname FROM pg_roles WHERE rolname = 'marie_app';
+```
+
 ## 4. Vercel
 
 1. Import the Git repository.
@@ -69,7 +120,7 @@ Sign in as the instructor and create the first student from **Students**. Share 
 3. Leave **Output Directory** empty. Do not set it to `public`. That setting is for static sites and will fail this app after `next build`.
 4. Build command: `npm run build` (the default for Next.js).
 5. Add the runtime variables: `DATABASE_URL`, `SESSION_SECRET`, `APP_URL`, `ALLOW_STUDENT_REGISTRATION`, and the optional email variables.
-6. Do not set `SEED_DEMO_STUDENT` on the website.
+6. Do not set `DATABASE_ADMIN_URL`, `APP_DB_PASSWORD`, or `SEED_DEMO_STUDENT` on the website.
 7. Deploy.
 
 The repo includes `vercel.json` with the Next.js framework preset so Vercel does not treat the project as a static export.
