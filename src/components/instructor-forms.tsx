@@ -3,11 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PasswordInput } from "@/components/password-input";
-import { Button, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
+import { Button, Badge, Card, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { commonTimeZones } from "@/lib/time";
 import {
   addInstructorNote,
   createStudentAccount,
+  deleteContactMessage,
   inviteStudent,
   moveLesson,
   moveModule,
@@ -19,6 +20,7 @@ import {
   saveClass,
   saveModule,
   saveResource,
+  setContactMessageHandled,
   setStudentActive,
   setStudentPassword,
   updateInstructorSettings,
@@ -143,6 +145,70 @@ export function PendingInviteRow({ inviteId, email }: { inviteId: string; email:
         {pending ? "Revoking" : "Revoke"}
       </Button>
     </div>
+  );
+}
+
+export function ContactMessageRow({
+  id,
+  name,
+  email,
+  message,
+  handled,
+  created,
+}: {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  handled: boolean;
+  created: string;
+}) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <Card className="p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-bold text-navy">{name}</p>
+          <a href={`mailto:${email}`} className="text-sm text-primary hover:underline">
+            {email}
+          </a>
+          <p className="mt-0.5 text-xs text-muted">{created}</p>
+        </div>
+        {handled ? <Badge tone="success">Handled</Badge> : <Badge tone="warning">New</Badge>}
+      </div>
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink">{message}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          disabled={pending}
+          onClick={() =>
+            start(async () => {
+              await setContactMessageHandled(id, !handled);
+              router.refresh();
+            })
+          }
+        >
+          {handled ? "Mark as new" : "Mark as handled"}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={pending}
+          onClick={() =>
+            start(async () => {
+              await deleteContactMessage(id);
+              router.refresh();
+            })
+          }
+        >
+          Delete
+        </Button>
+      </div>
+    </Card>
   );
 }
 

@@ -1,7 +1,6 @@
 export const publicNavLinks = [
-  { href: "/#top", label: "Home" },
-  { href: "/#about", label: "About Us" },
-  { href: "/#programme", label: "Our Programme" },
-  { href: "/#how", label: "How It Works" },
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About the Programme" },
+  { href: "/contact", label: "Contact Us" },
   { href: "/faqs", label: "FAQs" },
 ];

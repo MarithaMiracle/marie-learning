@@ -19,13 +19,13 @@ export function SiteFooter({
           <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">{programme.description}</p>
         </div>
         <nav aria-label="Footer">
-          <p className="text-sm font-bold text-white">On this page</p>
+          <p className="text-sm font-bold text-white">Pages</p>
           <ul className="mt-3 space-y-2 text-sm">
             {publicNavLinks.map((link) => (
               <li key={link.href}>
-                <a href={link.href} className="text-slate-300 hover:text-primary">
+                <Link href={link.href} className="text-slate-300 hover:text-primary">
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

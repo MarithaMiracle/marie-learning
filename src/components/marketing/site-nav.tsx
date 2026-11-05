@@ -49,7 +49,7 @@ export function SiteNav({
           <Logo tone={lightInk ? "light" : "dark"} />
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Public">
             {publicNavLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
@@ -60,7 +60,7 @@ export function SiteNav({
                 )}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="hidden items-center gap-2 lg:flex">
@@ -110,7 +110,7 @@ export function SiteNav({
           >
             <nav className="flex flex-col px-3 py-3" aria-label="Public mobile">
               {publicNavLinks.map((link) => (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
@@ -120,7 +120,7 @@ export function SiteNav({
                   onClick={() => setOpen(false)}
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
               <div
                 className={cn(

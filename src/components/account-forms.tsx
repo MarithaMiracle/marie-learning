@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PasswordInput } from "@/components/password-input";
-import { Button, Field, TextInput } from "@/components/ui";
+import { Button, Field, SelectInput, TextArea, TextInput } from "@/components/ui";
 import { commonTimeZones } from "@/lib/time";
 import { acceptInviteAction, changePasswordAction, forgotPasswordAction, loginAction, registerAction, resetPasswordAction } from "@/server/auth-actions";
 import { saveOnboarding, updateStudentSettings } from "@/server/student-actions";
@@ -21,7 +21,7 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   return (
     <form
-      className="space-y-4"
+      className="space-y-6"
       onSubmit={form.handleSubmit(async (values) => {
         setError(null);
         const result = await loginAction(values);
@@ -36,9 +36,13 @@ export function LoginForm() {
         <PasswordInput autoComplete="current-password" {...form.register("password")} />
       </Field>
       {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
-      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+      <button
+        type="submit"
+        className="flex h-14 w-full items-center justify-center rounded-full bg-navy text-base font-bold text-white shadow-lg transition-all hover:bg-navy/90 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+        disabled={form.formState.isSubmitting}
+      >
         {form.formState.isSubmitting ? "Signing in" : "Log in"}
-      </Button>
+      </button>
     </form>
   );
 }
@@ -55,7 +59,7 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   return (
     <form
-      className="space-y-4"
+      className="space-y-6"
       onSubmit={form.handleSubmit(async (values) => {
         const result = await registerAction(values);
         if (result && !result.ok) setError(result.error);
@@ -72,9 +76,13 @@ export function RegisterForm() {
         <PasswordInput autoComplete="new-password" {...form.register("password")} />
       </Field>
       {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
-      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+      <button
+        type="submit"
+        className="flex h-14 w-full items-center justify-center rounded-full bg-navy text-base font-bold text-white shadow-lg transition-all hover:bg-navy/90 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+        disabled={form.formState.isSubmitting}
+      >
         {form.formState.isSubmitting ? "Creating account" : "Create account"}
-      </Button>
+      </button>
     </form>
   );
 }
@@ -92,7 +100,7 @@ export function AcceptInviteForm({ token }: { token: string }) {
   const [error, setError] = useState<string | null>(null);
   return (
     <form
-      className="space-y-4"
+      className="space-y-6"
       onSubmit={form.handleSubmit(async (values) => {
         const result = await acceptInviteAction({ token, ...values });
         if (result && !result.ok) setError(result.error);
@@ -106,9 +114,13 @@ export function AcceptInviteForm({ token }: { token: string }) {
         <PasswordInput autoComplete="new-password" {...form.register("password")} />
       </Field>
       {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
-      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+      <button
+        type="submit"
+        className="flex h-14 w-full items-center justify-center rounded-full bg-navy text-base font-bold text-white shadow-lg transition-all hover:bg-navy/90 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+        disabled={form.formState.isSubmitting}
+      >
         {form.formState.isSubmitting ? "Creating account" : "Create account"}
-      </Button>
+      </button>
     </form>
   );
 }
@@ -121,7 +133,7 @@ export function ForgotForm() {
   const [pending, setPending] = useState(false);
   return (
     <form
-      className="space-y-4"
+      className="space-y-6"
       onSubmit={async (event) => {
         event.preventDefault();
         setPending(true);
@@ -136,18 +148,30 @@ export function ForgotForm() {
       }}
     >
       <Field label="Email">
-        <TextInput type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
+        <TextInput
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          autoComplete="email"
+        />
       </Field>
       {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
-      {message ? <p className="text-sm leading-6 text-slate-700">{message}</p> : null}
+      {message ? <p className="text-sm leading-relaxed text-slate-700">{message}</p> : null}
       {link ? (
-        <p className="text-sm leading-6">
-          Local development link: <a className="font-semibold text-primary" href={link}>{link}</a>
-        </p>
+        <div className="rounded-xl bg-slate-50 p-4 text-sm leading-relaxed">
+          <p className="font-bold text-navy">Local development link:</p>
+          <a className="mt-1 block break-all font-semibold text-primary" href={link}>
+            {link}
+          </a>
+        </div>
       ) : null}
-      <Button type="submit" disabled={pending}>
+      <button
+        type="submit"
+        className="flex h-14 w-full items-center justify-center rounded-full bg-navy text-base font-bold text-white shadow-lg transition-all hover:bg-navy/90 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+        disabled={pending}
+      >
         {pending ? "Sending" : "Send reset link"}
-      </Button>
+      </button>
     </form>
   );
 }
@@ -158,7 +182,7 @@ export function ResetForm({ token }: { token: string }) {
   const [pending, setPending] = useState(false);
   return (
     <form
-      className="space-y-4"
+      className="space-y-6"
       onSubmit={async (event) => {
         event.preventDefault();
         setPending(true);
@@ -168,12 +192,20 @@ export function ResetForm({ token }: { token: string }) {
       }}
     >
       <Field label="New password" hint="At least 8 characters.">
-        <PasswordInput value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" />
+        <PasswordInput
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          autoComplete="new-password"
+        />
       </Field>
       {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
-      <Button type="submit" disabled={pending}>
+      <button
+        type="submit"
+        className="flex h-14 w-full items-center justify-center rounded-full bg-navy text-base font-bold text-white shadow-lg transition-all hover:bg-navy/90 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+        disabled={pending}
+      >
         {pending ? "Saving" : "Save password and sign in"}
-      </Button>
+      </button>
     </form>
   );
 }
@@ -185,7 +217,7 @@ export function PasswordForm() {
   const [pending, setPending] = useState(false);
   return (
     <form
-      className="space-y-4"
+      className="space-y-6"
       onSubmit={async (event) => {
         event.preventDefault();
         setPending(true);
@@ -199,15 +231,27 @@ export function PasswordForm() {
       }}
     >
       <Field label="Current password">
-        <PasswordInput value={currentPassword} onChange={(event) => setCurrent(event.target.value)} autoComplete="current-password" />
+        <PasswordInput
+          value={currentPassword}
+          onChange={(event) => setCurrent(event.target.value)}
+          autoComplete="current-password"
+        />
       </Field>
       <Field label="New password">
-        <PasswordInput value={newPassword} onChange={(event) => setNext(event.target.value)} autoComplete="new-password" />
+        <PasswordInput
+          value={newPassword}
+          onChange={(event) => setNext(event.target.value)}
+          autoComplete="new-password"
+        />
       </Field>
       {message ? <p className="text-sm text-muted">{message}</p> : null}
-      <Button type="submit" disabled={pending}>
+      <button
+        type="submit"
+        className="flex h-12 w-full items-center justify-center rounded-full bg-navy text-sm font-bold text-white transition-all hover:bg-navy/90 active:scale-[0.98] disabled:opacity-50 sm:w-auto sm:px-8"
+        disabled={pending}
+      >
         {pending ? "Saving" : "Change password"}
-      </Button>
+      </button>
     </form>
   );
 }
@@ -288,74 +332,96 @@ export function OnboardingWizard({
         }
       })}
     >
-      <p className="text-sm font-semibold text-primary">Step {step + 1} of 6</p>
+      <div className="mb-8 flex items-center gap-4">
+        <div className="flex h-2 flex-1 gap-1.5 overflow-hidden rounded-full bg-slate-100">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`h-full flex-1 transition-colors duration-500 ${i <= step ? "bg-primary" : "bg-transparent"}`}
+            />
+          ))}
+        </div>
+        <span className="text-xs font-bold uppercase tracking-wider text-muted">Step {step + 1} of 6</span>
+      </div>
+
       {step === 0 ? (
-        <>
+        <div className="space-y-6">
           <Field label="Full name" error={form.formState.errors.fullName?.message}>
-            <TextInput {...form.register("fullName")} />
+            <TextInput autoComplete="name" {...form.register("fullName")} />
           </Field>
           <Field label="What should we call you?" hint="This can be a first name or nickname.">
-            <TextInput {...form.register("preferredName")} />
+            <TextInput autoComplete="nickname" {...form.register("preferredName")} />
           </Field>
-          <p className="text-sm text-muted">Your account email is {email}. Ask your instructor if it needs to change.</p>
-        </>
+          <Field label="Account email" hint="Ask your instructor if this needs to change.">
+            <TextInput
+              type="email"
+              value={email}
+              disabled
+              className="border-dashed bg-slate-50/50 text-navy/50 opacity-80"
+            />
+          </Field>
+        </div>
       ) : null}
       {step === 1 ? (
-        <>
+        <div className="space-y-6">
           <Field label="Country" error={form.formState.errors.country?.message}>
             <TextInput {...form.register("country")} placeholder="Nigeria" />
           </Field>
           <Field label="Time zone" error={form.formState.errors.timezone?.message}>
-            <select className="w-full rounded-xl border border-line px-3 py-2.5" {...form.register("timezone")}>
+            <SelectInput {...form.register("timezone")}>
               {commonTimeZones.map((zone) => (
                 <option key={zone} value={zone}>
                   {zone}
                 </option>
               ))}
-            </select>
+            </SelectInput>
           </Field>
-        </>
+        </div>
       ) : null}
       {step === 2 ? (
-        <>
-          <fieldset>
-            <legend className="mb-2 text-sm font-semibold">Which operating system does your computer use?</legend>
-            {[
+        <div className="space-y-6">
+          <Choice
+            legend="Which operating system does your computer use?"
+            name="operatingSystem"
+            register={form.register}
+            options={[
               ["windows", "Windows"],
               ["macos", "macOS"],
               ["linux", "Linux"],
               ["unknown", "I am not sure"],
-            ].map(([value, label]) => (
-              <label key={value} className="mb-2 flex items-center gap-2 text-sm">
-                <input type="radio" value={value} {...form.register("operatingSystem")} />
-                {label}
-              </label>
-            ))}
-          </fieldset>
-          {os === "windows" ? (
-            <Field label="Windows version, if you know it" hint="Windows 10 and Windows 11 are both fine.">
-              <TextInput {...form.register("osVersion")} placeholder="Windows 11" />
+            ]}
+          />
+          {os !== "unknown" ? (
+            <Field
+              label={
+                os === "windows"
+                  ? "Windows version, if you know it"
+                  : os === "macos"
+                  ? "macOS version, if you know it"
+                  : "Linux distribution"
+              }
+              hint={
+                os === "windows"
+                  ? "Windows 10 and Windows 11 are both fine."
+                  : os === "macos"
+                  ? "You can find this in the Apple menu, then About This Mac."
+                  : "For example, Ubuntu."
+              }
+            >
+              <TextInput
+                {...form.register("osVersion")}
+                placeholder={os === "windows" ? "Windows 11" : os === "macos" ? "macOS Sequoia" : "Ubuntu"}
+              />
             </Field>
-          ) : null}
-          {os === "macos" ? (
-            <Field label="macOS version, if you know it" hint="You can find this in the Apple menu, then About This Mac.">
-              <TextInput {...form.register("osVersion")} placeholder="macOS Sequoia" />
-            </Field>
-          ) : null}
-          {os === "linux" ? (
-            <Field label="Linux distribution" hint="For example, Ubuntu.">
-              <TextInput {...form.register("osVersion")} placeholder="Ubuntu" />
-            </Field>
-          ) : null}
-          {os === "unknown" ? (
-            <div className="rounded-xl bg-slate-50 p-4 text-sm leading-6">
-              <p className="font-bold">How to tell</p>
-              <p className="mt-2"><span className="font-semibold">Windows:</span> select Start, then Settings, System, and About. It names Windows 10 or Windows 11.</p>
-              <p className="mt-2"><span className="font-semibold">macOS:</span> select the Apple menu, then About This Mac.</p>
-              <p className="mt-2"><span className="font-semibold">Linux:</span> open Settings and look for About, or ask someone who set the computer up. Ubuntu is a common choice for development.</p>
+          ) : os === "unknown" ? (
+            <div className="rounded-2xl bg-slate-50 p-5 text-sm leading-6">
+              <p className="font-bold text-navy">How to tell</p>
+              <p className="mt-2"><span className="font-semibold text-navy">Windows:</span> select Start, then Settings, System, and About. It names Windows 10 or Windows 11.</p>
+              <p className="mt-2"><span className="font-semibold text-navy">macOS:</span> select the Apple menu, then About This Mac.</p>
+              <p className="mt-2"><span className="font-semibold text-navy">Linux:</span> open Settings and look for About, or ask someone who set the computer up. Ubuntu is a common choice.</p>
             </div>
           ) : null}
-        </>
+        </div>
       ) : null}
       {step === 3 ? (
         <Choice
@@ -384,9 +450,12 @@ export function OnboardingWizard({
         />
       ) : null}
       {step === 5 ? (
-        <>
+        <div className="space-y-6">
           <Field label="What do you want to be able to do by the end of the programme?" error={form.formState.errors.learningGoals?.message}>
-            <textarea className="min-h-28 w-full rounded-xl border border-line px-3 py-2.5" {...form.register("learningGoals")} />
+            <TextArea
+              {...form.register("learningGoals")}
+              placeholder="e.g. I want to build a personal project and understand how web apps work..."
+            />
           </Field>
           <Choice
             legend="How much time can you practise outside our live classes?"
@@ -399,25 +468,43 @@ export function OnboardingWizard({
               ["h8plus", "8 hours or more weekly"],
             ]}
           />
-        </>
+        </div>
       ) : null}
       {error ? <p className="text-sm font-medium text-danger">{error}</p> : null}
       {saved ? <p className="text-sm font-medium text-success">Profile saved.</p> : null}
-      <div className="flex gap-3">
-        {step > 0 ? (
-          <Button type="button" variant="secondary" onClick={() => setStep((value) => value - 1)}>
-            Back
-          </Button>
-        ) : null}
-        {step < 5 ? (
-          <Button type="button" onClick={() => void next()}>
-            Continue
-          </Button>
-        ) : (
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Saving" : mode === "settings" ? "Save profile" : "Finish onboarding"}
-          </Button>
-        )}
+      <div className="mt-12 flex items-center justify-between border-t border-line pt-10">
+        <div>
+          {step > 0 ? (
+            <button
+              type="button"
+              className="flex h-14 items-center justify-center rounded-full border-2 border-line px-10 text-base font-bold text-navy transition-all hover:border-navy hover:bg-slate-50 active:scale-[0.98]"
+              onClick={() => setStep((value) => value - 1)}
+            >
+              Back
+            </button>
+          ) : (
+            <div />
+          )}
+        </div>
+        <div>
+          {step < 5 ? (
+            <button
+              type="button"
+              className="flex h-14 items-center justify-center rounded-full bg-navy px-12 text-base font-bold text-white shadow-lg transition-all hover:bg-navy/90 hover:shadow-xl active:scale-[0.98]"
+              onClick={() => void next()}
+            >
+              Continue
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="flex h-14 items-center justify-center rounded-full bg-navy px-12 text-base font-bold text-white shadow-lg transition-all hover:bg-navy/90 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Saving" : mode === "settings" ? "Save profile" : "Finish onboarding"}
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );
@@ -430,19 +517,32 @@ function Choice({
   register,
 }: {
   legend: string;
-  name: "computerExperience" | "codingExperience" | "weeklyPractice";
+  name: "operatingSystem" | "computerExperience" | "codingExperience" | "weeklyPractice";
   options: [string, string][];
   register: ReturnType<typeof useForm<OnboardingValues>>["register"];
 }) {
   return (
-    <fieldset className="space-y-2">
-      <legend className="mb-2 text-sm font-semibold">{legend}</legend>
-      {options.map(([value, label]) => (
-        <label key={value} className="flex items-center gap-2 text-sm">
-          <input type="radio" value={value} {...register(name)} />
-          {label}
-        </label>
-      ))}
+    <fieldset className="space-y-4">
+      <legend className="mb-4 text-sm font-bold uppercase tracking-widest text-primary/80">{legend}</legend>
+      <div className="grid gap-4 sm:grid-cols-1">
+        {options.map(([value, label]) => (
+          <label
+            key={value}
+            className="group relative flex cursor-pointer items-center gap-4 py-1 transition-all"
+          >
+            <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+              <input
+                type="radio"
+                value={value}
+                className="peer h-6 w-6 cursor-pointer appearance-none rounded-full border-2 border-line bg-white transition-all checked:border-primary checked:bg-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                {...register(name)}
+              />
+              <div className="pointer-events-none absolute h-2.5 w-2.5 rounded-full bg-navy opacity-0 transition-opacity peer-checked:opacity-100" />
+            </div>
+            <span className="text-lg font-bold text-navy group-hover:text-primary transition-colors">{label}</span>
+          </label>
+        ))}
+      </div>
     </fieldset>
   );
 }

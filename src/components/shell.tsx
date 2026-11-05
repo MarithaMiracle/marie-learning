@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   Library,
   LogOut,
+  Mail,
   Menu,
   Megaphone,
   Settings,
@@ -39,6 +40,7 @@ const icons: Record<string, LucideIcon> = {
   settings: Settings,
   students: Users,
   curriculum: BookOpen,
+  messages: Mail,
 };
 
 export function AppShell({
@@ -48,6 +50,7 @@ export function AppShell({
   items,
   noticeCount = 0,
   children,
+  hero,
 }: {
   name: string;
   role: "instructor" | "student";
@@ -55,15 +58,20 @@ export function AppShell({
   items: { href: string; label: string; icon: string }[];
   noticeCount?: number;
   children: React.ReactNode;
+  hero?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const nav = (
-    <nav className="flex flex-col gap-1" aria-label="Main">
+    <nav className="flex flex-col gap-1.5" aria-label="Main">
       {items.map((item) => {
         const Icon = icons[item.icon] ?? BookOpen;
-        const active = pathname === item.href || (item.href !== "/student/dashboard" && item.href !== "/instructor/dashboard" && pathname.startsWith(item.href));
+        const active =
+          pathname === item.href ||
+          (item.href !== "/student/dashboard" &&
+            item.href !== "/instructor/dashboard" &&
+            pathname.startsWith(item.href));
         return (
           <Link
             key={item.href}
@@ -71,11 +79,11 @@ export function AppShell({
             onClick={() => setOpen(false)}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold",
-              active ? "bg-primary/10 text-navy" : "text-navy/80 hover:bg-canvas",
+              "flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-bold transition-all",
+              active ? "bg-navy text-white shadow-md" : "text-navy/70 hover:bg-slate-50 hover:text-navy",
             )}
           >
-            <Icon className="h-4 w-4" aria-hidden="true" />
+            <Icon className={cn("h-4.5 w-4.5", active ? "text-primary" : "text-navy/40")} aria-hidden="true" />
             {item.label}
           </Link>
         );
@@ -84,67 +92,97 @@ export function AppShell({
   );
 
   return (
-    <div className="min-h-screen">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2">
+    <div className="min-h-screen bg-canvas">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2"
+      >
         Skip to content
       </a>
-      <header className="no-print sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur">
-        <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
-          <div className="flex items-center gap-3">
+
+      {/* Header */}
+      <header className="no-print sticky top-0 z-40 border-b border-line bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-4">
             <button
               type="button"
-              className="rounded-lg p-2 text-ink hover:bg-slate-100 lg:hidden"
+              className="rounded-xl p-2 text-navy hover:bg-slate-100 lg:hidden"
               aria-expanded={open}
               aria-controls="app-nav"
               onClick={() => setOpen((value) => !value)}
             >
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               <span className="sr-only">Menu</span>
             </button>
-            <Link href={role === "instructor" ? "/instructor/dashboard" : "/student/dashboard"} className="flex items-center gap-2 text-navy">
-              <Mark className="h-8 w-8" />
-              <span className="text-[15px] leading-none tracking-[-0.03em]">
-                <span className="font-bold">Marie</span>
-                <span className="font-normal"> Learning</span>
-              </span>
+            <Link
+              href={role === "instructor" ? "/instructor/dashboard" : "/student/dashboard"}
+              className="flex items-center gap-2 text-navy"
+            >
+              <Mark className="h-9 w-9" />
+              <div className="flex flex-col leading-none">
+                <span className="text-lg font-bold tracking-tight">Marie</span>
+                <span className="text-[13px] font-medium text-muted">Learning</span>
+              </div>
             </Link>
           </div>
-          <div className="flex items-center gap-3 text-sm">
+
+          <div className="flex items-center gap-4">
             {role === "student" ? (
               <Link
                 href="/student/notifications"
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold",
-                  noticeCount > 0 ? "bg-primary/10 text-navy" : "text-muted hover:bg-canvas hover:text-navy",
+                  "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                  noticeCount > 0 ? "bg-primary/10 text-navy" : "text-muted hover:bg-slate-100 hover:text-navy",
                 )}
                 aria-label={noticeCount > 0 ? `${noticeCount} new notifications` : "Notifications"}
               >
-                <Bell className="h-4 w-4" aria-hidden="true" />
-                {noticeCount > 0 ? <span>{noticeCount} new</span> : <span className="hidden sm:inline">Updates</span>}
+                <Bell className="h-5 w-5" aria-hidden="true" />
+                {noticeCount > 0 ? (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-navy ring-2 ring-white">
+                    {noticeCount}
+                  </span>
+                ) : null}
               </Link>
             ) : null}
-            <div className="hidden text-right sm:block">
-              <p className="font-semibold text-ink">{name}</p>
-              <p className="text-xs text-muted">{role === "instructor" ? "Instructor" : email}</p>
+
+            <div className="hidden h-10 items-center gap-3 border-l border-line pl-4 sm:flex">
+              <div className="text-right">
+                <p className="text-sm font-bold text-navy leading-tight">{name}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted/80">
+                  {role === "instructor" ? "Instructor" : "Student"}
+                </p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy text-[13px] font-bold text-white uppercase tracking-tighter ring-2 ring-primary/20">
+                {name.substring(0, 2)}
+              </div>
             </div>
-            <form action={logoutAction}>
-              <button type="submit" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-semibold text-slate-700 hover:bg-slate-100">
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Log out</span>
+
+            <form action={logoutAction} className="border-l border-line pl-2">
+              <button
+                type="submit"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-muted hover:bg-red-50 hover:text-danger transition-colors"
+                title="Log out"
+              >
+                <LogOut className="h-5 w-5" aria-hidden="true" />
+                <span className="sr-only">Log out</span>
               </button>
             </form>
           </div>
         </div>
       </header>
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+
+      {/* Hero area */}
+      {hero ? <div className="no-print relative z-10">{hero}</div> : null}
+
+      <div className={cn("mx-auto grid max-w-[1600px] gap-8 px-4 sm:px-6 lg:grid-cols-[260px_minmax(0,1fr)]", hero ? "py-8" : "py-8")}>
         <aside
           id="app-nav"
           className={cn(
-            "no-print lg:sticky lg:top-20 lg:block lg:self-start",
-            open ? "block" : "hidden",
+            "no-print lg:sticky lg:top-28 lg:block lg:self-start",
+            open ? "fixed inset-0 top-20 z-50 bg-white p-4" : "hidden",
           )}
         >
-          <div className="rounded-2xl border border-line bg-white p-3 shadow-sm lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto">
+          <div className="rounded-[2rem] border border-line bg-white p-4 shadow-xl shadow-navy/5 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto">
             {nav}
           </div>
         </aside>
@@ -173,6 +211,7 @@ export const studentNav = [
 export const instructorNav = [
   { href: "/instructor/dashboard", label: "Dashboard", icon: "dashboard" },
   { href: "/instructor/students", label: "Students", icon: "students" },
+  { href: "/instructor/messages", label: "Messages", icon: "messages" },
   { href: "/instructor/curriculum", label: "Curriculum", icon: "curriculum" },
   { href: "/instructor/modules", label: "Modules", icon: "learn" },
   { href: "/instructor/lessons", label: "Lessons", icon: "assignments" },

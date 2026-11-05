@@ -21,6 +21,8 @@ const known = [
   "Only an instructor can invite a student",
   "Account not found",
   "Submit your answers as a list",
+  "Enter your name",
+  "Write a message before sending",
 ];
 
 export function dbErrorMessage(error: unknown, fallback = "Something went wrong. Please try again.") {

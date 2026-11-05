@@ -97,6 +97,60 @@ export async function revokeStudentInvite(inviteId: string): Promise<ActionResul
   }
 }
 
+export async function submitContactMessage(input: {
+  name: string;
+  email: string;
+  message: string;
+  company?: string;
+}): Promise<ActionResult> {
+  if ((input.company ?? "").trim()) return { ok: true };
+  const parsed = z
+    .object({
+      name: z.string().trim().min(2).max(120),
+      email: z.string().trim().email(),
+      message: z.string().trim().min(5).max(4000),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Enter your name, a valid email, and a message." };
+  try {
+    await withActor(null, async (tx) => {
+      await tx.execute(sql`select submit_contact_message(${parsed.data.name}, ${parsed.data.email}, ${parsed.data.message})`);
+    });
+    revalidatePath("/instructor/messages");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: dbErrorMessage(error, "Your message could not be sent. Please try again.") };
+  }
+}
+
+export async function setContactMessageHandled(id: string, handled: boolean): Promise<ActionResult> {
+  const user = await requireUser("instructor");
+  if (!isUuid(id)) return { ok: false, error: "That message could not be found." };
+  try {
+    await withActor(user, async (tx) => {
+      await tx.execute(sql`select set_contact_message_handled(${id}::uuid, ${handled})`);
+    });
+    revalidatePath("/instructor/messages");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: dbErrorMessage(error) };
+  }
+}
+
+export async function deleteContactMessage(id: string): Promise<ActionResult> {
+  const user = await requireUser("instructor");
+  if (!isUuid(id)) return { ok: false, error: "That message could not be found." };
+  try {
+    await withActor(user, async (tx) => {
+      await tx.execute(sql`select delete_contact_message(${id}::uuid)`);
+    });
+    revalidatePath("/instructor/messages");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: dbErrorMessage(error) };
+  }
+}
+
 export async function setStudentActive(studentId: string, isActive: boolean): Promise<ActionResult> {
   const user = await requireUser("instructor");
   if (!isUuid(studentId)) return { ok: false, error: "That student could not be found." };

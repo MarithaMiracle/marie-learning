@@ -8,7 +8,13 @@ export default async function StudentLayout({ children }: { children: React.Reac
   if (!user.onboardingCompleted) redirect("/student/onboarding");
   const notices = await countUnread(user);
   return (
-    <AppShell name={displayName(user)} role="student" email={user.email} items={studentNav} noticeCount={notices}>
+    <AppShell
+      name={displayName(user)}
+      role="student"
+      email={user.email}
+      items={studentNav}
+      noticeCount={notices}
+    >
       {children}
     </AppShell>
   );

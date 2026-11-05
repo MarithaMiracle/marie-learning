@@ -36,18 +36,18 @@ export function Button({
 }
 
 export const fieldClass =
-  "w-full rounded-xl border border-line bg-white px-3 py-2.5 text-[15px] text-ink shadow-sm outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20";
+  "w-full rounded-2xl border border-line bg-white px-5 py-3 text-lg text-ink shadow-sm outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(fieldClass, props.className)} {...props} />;
+  return <input className={cn(fieldClass, "h-14", props.className)} {...props} />;
 }
 
 export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={cn(fieldClass, "min-h-28 resize-y", props.className)} {...props} />;
+  return <textarea className={cn(fieldClass, "min-h-32 resize-y py-4", props.className)} {...props} />;
 }
 
 export function SelectInput(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={cn(fieldClass, props.className)} {...props} />;
+  return <select className={cn(fieldClass, "h-14 appearance-none", props.className)} {...props} />;
 }
 
 export function Field({
@@ -63,16 +63,21 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-semibold text-ink">{label}</span>
+      <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-primary/80">{label}</span>
       {children}
-      {hint ? <span className="mt-1.5 block text-sm leading-5 text-muted">{hint}</span> : null}
-      {error ? <span className="mt-1.5 block text-sm font-medium text-danger">{error}</span> : null}
+      {hint ? <span className="mt-2 block text-sm leading-relaxed text-muted">{hint}</span> : null}
+      {error ? <span className="mt-2 block text-sm font-medium text-danger">{error}</span> : null}
     </label>
   );
 }
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-2xl border border-line bg-white shadow-sm", className)} {...props} />;
+  return (
+    <div
+      className={cn("rounded-[2rem] border border-line bg-white shadow-xl shadow-navy/5", className)}
+      {...props}
+    />
+  );
 }
 
 export function Badge({

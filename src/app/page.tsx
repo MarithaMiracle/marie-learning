@@ -1,40 +1,28 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { sql } from "drizzle-orm";
 import {
   BookOpen,
-  Braces,
   CheckCircle2,
   Code2,
-  Database,
-  FileCode2,
-  FolderGit2,
-  GraduationCap,
   Layout,
   MonitorPlay,
   PenLine,
   Route,
   Server,
-  Terminal,
 } from "lucide-react";
 import { AboutVisual } from "@/components/marketing/about-visual";
 import { HeroDoodles } from "@/components/marketing/hero-doodles";
 import { HeroVisual } from "@/components/marketing/hero-visual";
+import { PortalPreview } from "@/components/marketing/portal-preview";
+import { TechMarquee } from "@/components/marketing/tech-marquee";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { TornEdge } from "@/components/marketing/torn-edge";
 import { PublicFrame, registrationIsOpen } from "@/components/public-frame";
 import { buttonClass } from "@/components/ui";
 import { getCurrentUser, homeFor } from "@/lib/auth";
-import { months, weekCatalogue } from "@/lib/catalogue";
-import { jsonValue, withActor } from "@/lib/db/client";
+import { months } from "@/lib/catalogue";
+import { getPublicCatalogue } from "@/server/public-data";
 import Image from "next/image";
-
-type CatalogueItem = {
-  week: number;
-  title: string;
-  description: string;
-  lessons: number;
-};
 
 export const metadata: Metadata = {
   title: { absolute: "Marie Learning | Learn to Build with Confidence" },
@@ -89,17 +77,6 @@ const stages = [
   },
 ] as const;
 
-const skills = [
-  { icon: FileCode2, title: "HTML" },
-  { icon: Layout, title: "CSS" },
-  { icon: Braces, title: "JavaScript" },
-  { icon: Code2, title: "TypeScript" },
-  { icon: MonitorPlay, title: "React" },
-  { icon: Server, title: "Node.js" },
-  { icon: Database, title: "PostgreSQL" },
-  { icon: FolderGit2, title: "Git & GitHub" },
-] as const;
-
 const approach = [
   { icon: Route, title: "A set path", text: "You can see the week you are on and the week that follows." },
   { icon: BookOpen, title: "Beginner instruction", text: "Lessons explain the idea before they ask you to type it." },
@@ -107,18 +84,12 @@ const approach = [
   { icon: CheckCircle2, title: "Your own progress", text: "The portal records lessons, assignments, quizzes, and classes for your account." },
 ] as const;
 
-const classRhythm = [
-  { icon: GraduationCap, title: "Written lessons", text: "Two lessons each week with steps for your operating system." },
-  { icon: MonitorPlay, title: "Live classes", text: "Two guided sessions a week with the instructor." },
-  { icon: PenLine, title: "Weekly work", text: "One assignment and one quiz to practise what you learned." },
-  { icon: Terminal, title: "Capstone project", text: "Finish with a task manager using React, an API, and PostgreSQL." },
-] as const;
 
 export default async function HomePage() {
   const user = await getCurrentUser();
   const registrationOpen = registrationIsOpen();
   const signedInHref = user ? homeFor(user.role) : null;
-  const weeks = await loadWeeks();
+  const weeks = await getPublicCatalogue();
   const startHref = signedInHref ?? "/register";
 
   return (
@@ -176,29 +147,45 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="border-y border-line bg-white">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-bold uppercase tracking-wide text-primary">What you learn</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-navy">The tools of modern web development.</h2>
-              <p className="mt-3 leading-7 text-muted">One practical skill at a time — from the first HTML page to a small full-stack application.</p>
+        <section className="border-y border-line bg-canvas/50">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-24">
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-wide text-primary">What you learn</p>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
+                  The tools of modern web development.
+                </h2>
+                <p className="mt-4 max-w-lg text-lg leading-8 text-muted">
+                  One practical skill at a time — from the first HTML page to a small full-stack application.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-4">
+                  {[
+                    "HTML5",
+                    "CSS3",
+                    "Tailwind CSS",
+                    "JavaScript",
+                    "TypeScript",
+                    "Next.js",
+                    "React",
+                    "Node.js",
+                    "PostgreSQL",
+                    "Git & GitHub",
+                  ].map((tech) => (
+                    <span
+                      key={tech}
+                      className="rounded-full border border-line bg-white px-4 py-1.5 text-sm font-semibold text-navy shadow-sm"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="relative">
+                <TechMarquee />
+              </div>
             </div>
-            <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-              {skills.map((skill) => (
-                <li
-                  key={skill.title}
-                  className="flex flex-col items-center gap-3 rounded-2xl border border-primary/15 bg-primary/[0.07] px-4 py-6 text-center transition hover:border-primary/35 hover:bg-primary/10"
-                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary shadow-sm">
-                    <skill.icon className="h-6 w-6" aria-hidden />
-                  </span>
-                  <span className="text-sm font-bold text-navy">{skill.title}</span>
-                </li>
-              ))}
-            </ul>
           </div>
         </section>
-
         <section id="programme" className="scroll-mt-24 bg-navy text-white">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-20">
             <div className="mx-auto max-w-2xl text-center">
@@ -247,86 +234,54 @@ export default async function HomePage() {
                         <span className="font-semibold text-navy">{stage.range}</span>
                         <span className="text-muted">{stage.lessons} lessons</span>
                       </div>
-                      <a href="#weeks" className={`${buttonClass({ size: "sm", className: "mt-4 w-full rounded-full" })}`}>
-                        View details
-                      </a>
                     </div>
                   </article>
                 );
               })}
             </div>
 
+            <div className="mt-10 text-center">
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-navy"
+              >
+                Explore the full 16-week curriculum
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
           </div>
         </section>
 
-        <section id="how" className="scroll-mt-24 bg-canvas">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <div className="max-w-2xl">
-              <p className="text-sm font-bold uppercase tracking-wide text-primary">How it works</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-navy">A practical week, every week.</h2>
+        <section className="border-t border-line bg-white">
+          <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-sm font-bold uppercase tracking-wide text-primary">The student portal</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-navy">A structured learning experience.</h2>
               <p className="mt-3 leading-7 text-muted">
-                Read the lessons, join the live classes, hand in the work, and track your progress in the portal.
+                Lessons, assignments, quizzes, progress tracking, and instructor guidance live in one place, so you always know what to do next.
               </p>
             </div>
-            <ol className="mt-10 grid gap-4 md:grid-cols-3">
-              {[
-                ["01", "Learn the fundamentals", "Start with how computers, websites, and applications work, even if you have never written a line of code."],
-                ["02", "Practise with guidance", "Follow the written lessons, attend two live classes each week, and work through the exercises."],
-                ["03", "Build a real project", "Finish with a guided task manager that connects a React page, an API, and PostgreSQL."],
-              ].map(([step, title, text]) => (
-                <li key={step} className="rounded-2xl border border-line bg-white p-6">
-                  <p className="text-sm font-bold text-primary">{step}</p>
-                  <h3 className="mt-2 text-lg font-bold text-navy">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted">{text}</p>
-                </li>
-              ))}
-            </ol>
-            <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {classRhythm.map((item) => (
-                <li key={item.title} className="rounded-2xl border border-line bg-white p-5">
-                  <item.icon className="h-5 w-5 text-primary" aria-hidden />
-                  <p className="mt-3 font-bold text-navy">{item.title}</p>
-                  <p className="mt-1 text-sm leading-6 text-muted">{item.text}</p>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-10 overflow-hidden rounded-3xl border border-line shadow-[0_18px_40px_rgba(6,44,39,0.08)]">
+              <PortalPreview />
+            </div>
           </div>
         </section>
 
-        <section id="weeks" className="scroll-mt-24 border-t border-line bg-white">
-          <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-            <h2 className="text-2xl font-bold text-navy">The 16 weeks</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">Published titles from the programme. Each week has two lessons.</p>
-            <ol className="mt-6 divide-y divide-line border-y border-line">
-              {weeks.map((week) => (
-                <li key={week.week} className="grid gap-1 py-4 sm:grid-cols-[5.5rem_1fr] sm:gap-4">
-                  <p className="text-sm font-bold text-primary">Week {week.week}</p>
-                  <div>
-                    <h3 className="font-semibold text-navy">{week.title}</h3>
-                    <p className="mt-1 text-sm leading-6 text-muted">{week.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
 
         <section className="bg-primary">
-          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-12 sm:px-6 md:flex-row md:items-center">
-            <div className="max-w-xl">
-              <h2 className="text-2xl font-bold tracking-tight text-navy sm:text-3xl">
-                Ready to start building with confidence?
-              </h2>
-              <p className="mt-2 leading-7 text-navy/80">
-                Join the programme, open Week 1, and take the first step with guided lessons and live classes.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
+          <div className="mx-auto max-w-6xl px-4 py-14 text-center sm:px-6">
+            <h2 className="text-2xl font-bold tracking-tight text-navy sm:text-3xl">
+              Ready to take your first step?
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl leading-7 text-navy/80">
+              Discover the programme in detail, or speak with us if you have questions before you start.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link href={startHref} className={buttonClass({ size: "lg", className: "bg-navy text-white hover:bg-navy/90" })}>
                 {signedInHref ? "Go to dashboard" : "Get Started"}
               </Link>
-              <a
-                href="#programme"
+              <Link
+                href="/about"
                 className={buttonClass({
                   variant: "secondary",
                   size: "lg",
@@ -334,10 +289,20 @@ export default async function HomePage() {
                 })}
               >
                 Explore the Programme
-              </a>
+              </Link>
+              <Link
+                href="/contact"
+                className={buttonClass({
+                  variant: "secondary",
+                  size: "lg",
+                  className: "border-navy/15 bg-white/80 text-navy hover:bg-white",
+                })}
+              >
+                Contact Us
+              </Link>
             </div>
             {registrationOpen || signedInHref ? null : (
-              <p className="text-sm text-navy/80 md:basis-full">
+              <p className="mt-5 text-sm text-navy/80">
                 Open registration is off. Ask your instructor for an account, then log in.
               </p>
             )}
@@ -346,22 +311,4 @@ export default async function HomePage() {
       </div>
     </PublicFrame>
   );
-}
-
-async function loadWeeks(): Promise<CatalogueItem[]> {
-  try {
-    const live = await withActor(null, async (tx) => {
-      const result = await tx.execute(sql`select public_catalogue() as catalogue`);
-      return jsonValue<CatalogueItem[]>(result) ?? [];
-    });
-    if (live?.length) return live;
-  } catch {
-    // The written catalogue below is the fallback when the database is unavailable.
-  }
-  return weekCatalogue.map(([title, description], index) => ({
-    week: index + 1,
-    title,
-    description,
-    lessons: 2,
-  }));
 }

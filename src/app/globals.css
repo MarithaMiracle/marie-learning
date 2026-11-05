@@ -188,6 +188,30 @@ input:disabled,
   }
 }
 
+/* Vertical Marquee Animation */
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical linear infinite;
+}
+
+.pause-marquee:hover .animate-marquee-vertical {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-vertical {
+    animation-duration: 60s !important;
+  }
+}
+
 @keyframes hero-panel-term {
   0%,
   100% {

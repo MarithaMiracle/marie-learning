@@ -60,6 +60,28 @@ export async function listPendingInvites(user: CurrentUser) {
   });
 }
 
+export async function listContactMessages(user: CurrentUser) {
+  return withActor(user, async (tx) => {
+    const result = await tx.execute(sql`select id, name, email, message, handled, created_at from list_contact_messages()`);
+    const rows = (Array.isArray(result) ? result : ((result as { rows?: unknown[] }).rows ?? [])) as {
+      id: string;
+      name: string;
+      email: string;
+      message: string;
+      handled: boolean;
+      created_at: string | Date;
+    }[];
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      message: row.message,
+      handled: row.handled,
+      createdAt: new Date(row.created_at),
+    }));
+  });
+}
+
 export async function getInstructorDashboard(user: CurrentUser) {
   return withActor(user, async (tx) => {
     const students = await tx.select().from(users).where(eq(users.role, "student")).orderBy(asc(users.fullName));

@@ -14,12 +14,13 @@ const questions = [
   ["How do I get started?", "Use Get Started to create a student account when registration is open. When it is closed, your instructor creates the account and you log in."],
 ] as const;
 
-export function FaqList() {
+export function FaqList({ limit }: { limit?: number }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const items = limit ? questions.slice(0, limit) : questions;
 
   return (
     <div className="divide-y divide-line border-y border-line">
-      {questions.map(([question, answer], index) => {
+      {items.map(([question, answer], index) => {
         const open = openIndex === index;
         const panelId = `faq-panel-${index}`;
         const buttonId = `faq-button-${index}`;
