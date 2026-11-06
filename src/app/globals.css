@@ -11,6 +11,12 @@
   --color-warning: #d97706;
   --color-danger: #dc2626;
   --color-navy: #10264b;
+  --color-accent: #ffa10a;
+  --color-surface: #f5f6f8;
+  --color-tint-blue: #e8eeff;
+  --color-tint-yellow: #fff8dc;
+  --color-tint-pink: #fde8ea;
+  --color-tint-mint: #e6faef;
 }
 
 /* SkillNest-inspired palette for the public marketing site only. */

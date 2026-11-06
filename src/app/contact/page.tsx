@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, Calendar, Clock, Users } from "lucide-react";
+import { BookOpen, Calendar, Clock, MessageSquareText, Users } from "lucide-react";
 import { ContactForm } from "@/components/marketing/contact-form";
 import { PublicFrame } from "@/components/public-frame";
 
@@ -35,40 +35,47 @@ const help = [
 export default function ContactPage() {
   return (
     <PublicFrame>
-      <article className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Contact us</p>
-        <h1 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-          Have questions about learning with us?
-        </h1>
-        <p className="mt-4 max-w-2xl leading-7 text-muted">
-          Whether you want to understand the programme better or need help getting started, we would be happy to hear
-          from you. Send a short message and your instructor will reply.
-        </p>
+      <article className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="rounded-4xl border border-line bg-linear-to-br from-primary/12 via-white to-white p-6 shadow-[0_24px_60px_rgba(16,38,75,0.06)] sm:p-8 lg:p-10">
+          <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Contact us</p>
+              <h1 className="mt-3 max-w-xl text-4xl font-black tracking-tight text-navy sm:text-5xl">
+                Have questions about learning with us?
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-8 text-muted">
+                Whether you want to understand the programme better or need help getting started, we would be happy to hear
+                from you. Send a short message and your instructor will reply.
+              </p>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1.1fr]">
-          <ul className="space-y-5">
-            {help.map((item) => (
-              <li key={item.title} className="flex gap-3">
-                <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                  <item.icon className="h-5 w-5" aria-hidden />
+              <ul className="mt-8 space-y-4">
+                {help.map((item) => (
+                  <li key={item.title} className="flex gap-4 rounded-2xl border border-line bg-white p-4 shadow-[0_12px_24px_rgba(16,38,75,0.03)]">
+                    <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <item.icon className="h-5 w-5" aria-hidden />
+                    </span>
+                    <div>
+                      <p className="font-black text-navy">{item.title}</p>
+                      <p className="mt-1 text-sm leading-6 text-muted">{item.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-4xl border border-line bg-white p-5 shadow-[0_18px_40px_rgba(16,38,75,0.08)] sm:p-7">
+              <div className="mb-5 flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <MessageSquareText className="h-5 w-5" aria-hidden />
                 </span>
-                <div>
-                  <p className="font-bold text-navy">{item.title}</p>
-                  <p className="mt-1 text-sm leading-6 text-muted">{item.text}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="rounded-3xl border border-line bg-white p-6 shadow-[0_18px_40px_rgba(6,44,39,0.08)] sm:p-8">
-            <h2 className="text-lg font-bold text-navy">Send a message</h2>
-            <div className="mt-5">
+                <h2 className="text-xl font-black text-navy">Send a message</h2>
+              </div>
               <ContactForm />
             </div>
           </div>
         </div>
 
-        <p className="mt-10 text-sm text-muted">
+        <p className="mt-8 text-sm text-muted">
           Want the details first? Read{" "}
           <Link href="/about" className="font-semibold text-primary hover:underline">
             About the Programme

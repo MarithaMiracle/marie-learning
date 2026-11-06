@@ -62,6 +62,8 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const isStudent = role === "student";
+  void email;
 
   const nav = (
     <nav className="flex flex-col gap-1.5" aria-label="Main">
@@ -72,6 +74,7 @@ export function AppShell({
           (item.href !== "/student/dashboard" &&
             item.href !== "/instructor/dashboard" &&
             pathname.startsWith(item.href));
+
         return (
           <Link
             key={item.href}
@@ -80,10 +83,10 @@ export function AppShell({
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-bold transition-all",
-              active ? "bg-navy text-white shadow-md" : "text-navy/70 hover:bg-slate-50 hover:text-navy",
+              active ? "bg-primary/10 text-navy shadow-sm" : "text-navy/70 hover:bg-slate-100 hover:text-navy",
             )}
           >
-            <Icon className={cn("h-4.5 w-4.5", active ? "text-primary" : "text-navy/40")} aria-hidden="true" />
+            <Icon className={cn("h-4.5 w-4.5", active ? "text-primary" : "text-navy/45")} aria-hidden="true" />
             {item.label}
           </Link>
         );
@@ -100,7 +103,6 @@ export function AppShell({
         Skip to content
       </a>
 
-      {/* Header */}
       <header className="no-print sticky top-0 z-40 border-b border-line bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-4">
@@ -127,7 +129,7 @@ export function AppShell({
           </div>
 
           <div className="flex items-center gap-4">
-            {role === "student" ? (
+            {isStudent ? (
               <Link
                 href="/student/notifications"
                 className={cn(
@@ -145,7 +147,7 @@ export function AppShell({
               </Link>
             ) : null}
 
-            <div className="hidden h-10 items-center gap-3 border-l border-line pl-4 sm:flex">
+            <div className="hidden items-center gap-3 border-l border-line pl-4 sm:flex">
               <div className="text-right">
                 <p className="text-sm font-bold text-navy leading-tight">{name}</p>
                 <p className="text-[11px] font-bold uppercase tracking-wider text-muted/80">
@@ -171,10 +173,9 @@ export function AppShell({
         </div>
       </header>
 
-      {/* Hero area */}
       {hero ? <div className="no-print relative z-10">{hero}</div> : null}
 
-      <div className={cn("mx-auto grid max-w-[1600px] gap-8 px-4 sm:px-6 lg:grid-cols-[260px_minmax(0,1fr)]", hero ? "py-8" : "py-8")}>
+      <div className={cn("mx-auto grid max-w-[1600px] gap-8 px-4 sm:px-6 lg:grid-cols-[250px_minmax(0,1fr)]", hero ? "py-8" : "py-8")}>
         <aside
           id="app-nav"
           className={cn(
@@ -182,7 +183,7 @@ export function AppShell({
             open ? "fixed inset-0 top-20 z-50 bg-white p-4" : "hidden",
           )}
         >
-          <div className="rounded-[2rem] border border-line bg-white p-4 shadow-xl shadow-navy/5 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto">
+          <div className="rounded-[2rem] border border-line bg-white p-4 shadow-[0_14px_28px_rgba(16,38,75,0.06)] lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto">
             {nav}
           </div>
         </aside>
