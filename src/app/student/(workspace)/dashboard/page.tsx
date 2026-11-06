@@ -30,7 +30,6 @@ import {
   Badge,
   Card,
   ProgressBar,
-  buttonClass,
 } from "@/components/ui";
 
 import { displayName, requireUser } from "@/lib/auth";
@@ -47,7 +46,6 @@ import {
 import type { OperatingSystem } from "@/lib/content-types";
 import { Checklist } from "@/components/checklist";
 import { markNotificationsRead } from "@/server/student-actions";
-import { TornEdge } from "@/components/marketing/torn-edge";
 
 export const metadata = {
   title: "Dashboard",
@@ -201,7 +199,6 @@ export default async function DashboardPage() {
   }).format(now);
 
   const currentWeek = data.currentModule?.weekNumber ?? 1;
-  const currentStage = getStage(currentWeek);
 
   const unreadCount = data.updates.filter(
     (item) => !item.readAt,
@@ -704,12 +701,12 @@ export default async function DashboardPage() {
               </div>
 
               <p className="mt-3 text-sm font-semibold text-navy">
-                You're all caught up
+                You&apos;re all caught up
               </p>
 
               <p className="mt-1 text-xs leading-5 text-muted">
                 Nothing is waiting on you right now. New assignments
-                will appear here when they're available.
+                will appear here when they&apos;re available.
               </p>
             </div>
           ) : (
@@ -779,7 +776,7 @@ export default async function DashboardPage() {
 
               <p className="mt-1 text-xs leading-5 text-muted">
                 Once your instructor reviews your submitted work,
-                you'll be able to see their comments here.
+                you&apos;ll be able to see their comments here.
               </p>
             </div>
           ) : (
@@ -896,7 +893,7 @@ export default async function DashboardPage() {
           {data.updates.length === 0 ? (
             <div className="mt-5 rounded-2xl bg-[#F5F8F8] p-5 text-center">
               <p className="text-sm font-semibold text-navy">
-                You're all caught up
+                You&apos;re all caught up
               </p>
 
               <p className="mt-1 text-xs leading-5 text-muted">
