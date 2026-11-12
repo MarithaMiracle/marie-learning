@@ -1,10 +1,9 @@
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import type { CurrentUser } from "@/lib/auth";
-import { withActor } from "@/lib/db/client";
+import { firstRow, withActor } from "@/lib/db/client";
 import {
   announcements,
   assignments,
-  instructorGuides,
   lessonProgress,
   lessons,
   modules,
@@ -237,7 +236,10 @@ export async function getLessonDetail(user: CurrentUser, lessonId: string) {
       .limit(1);
     const [profile] = await tx.select().from(studentProfiles).where(eq(studentProfiles.userId, user.id)).limit(1);
     const workOpen = isModuleWorkOpen(module.id, ordered, progressRows);
-    const [guide] = await tx.select().from(instructorGuides).where(eq(instructorGuides.lessonId, lesson.id)).limit(1);
+    // instructor_guides is instructor-only under RLS; this SECURITY DEFINER
+    // function returns only the practice knowledge-check answers.
+    const answerResult = await tx.execute(sql`select knowledge_check_answers(${lesson.id}::uuid) as answers`);
+    const answerRow = firstRow<{ answers: { id: string; answer: string; explanation: string }[] | null }>(answerResult);
     return {
       locked: false as const,
       lockReason: null,
@@ -248,7 +250,7 @@ export async function getLessonDetail(user: CurrentUser, lessonId: string) {
       assignment: assignment?.published
         ? { ...assignment, locked: !workOpen, lockReason: moduleWorkLockReason(module.id, ordered, progressRows) }
         : null,
-      knowledgeCheckAnswers: guide?.content.knowledgeCheckAnswers ?? [],
+      knowledgeCheckAnswers: Array.isArray(answerRow?.answers) ? answerRow.answers : [],
       previous: index > 0 ? siblings[index - 1] : null,
       next: index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null,
       operatingSystem: profile?.operatingSystem ?? null,

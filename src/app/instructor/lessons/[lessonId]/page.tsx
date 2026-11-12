@@ -42,7 +42,11 @@ export default async function InstructorLessonPage({ params }: { params: Promise
       <div className="grid gap-8">
         <section>
           <h2 className="mb-3 text-lg font-bold">Student view</h2>
-          <LessonView content={data.lesson.studentContent} stackedOs />
+          <LessonView
+            content={data.lesson.studentContent}
+            stackedOs
+            knowledgeCheckAnswers={data.guide?.content.knowledgeCheckAnswers ?? []}
+          />
         </section>
         <section>
           <h2 className="mb-3 text-lg font-bold">Instructor session guide</h2>

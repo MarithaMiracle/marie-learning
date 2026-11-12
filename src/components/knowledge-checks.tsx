@@ -26,6 +26,26 @@ function formatLabel(format: string) {
   return format;
 }
 
+function normalize(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function answersMatch(choice: string, answer: string, options: string[] = []) {
+  const needle = normalize(answer);
+  const picked = normalize(choice);
+  if (picked === needle) return true;
+
+  // Support keys stored as "B" / "b" or "B. option text".
+  const letter = needle.match(/^([a-d])(?:[.)]\s*(.*))?$/i);
+  if (letter) {
+    const index = letter[1].toLowerCase().charCodeAt(0) - 97;
+    const option = options[index];
+    if (option && normalize(option) === picked) return true;
+    if (letter[2] && normalize(letter[2]) === picked) return true;
+  }
+  return false;
+}
+
 export function KnowledgeChecks({
   checks,
   answers,
@@ -45,7 +65,7 @@ export function KnowledgeChecks({
         const key = answerById[check.id];
         const choice = selected[check.id];
         const show = revealed[check.id];
-        const correct = Boolean(choice && key && choice === key.answer);
+        const correct = Boolean(choice && key && answersMatch(choice, key.answer, check.options));
 
         return (
           <li key={check.id} className="rounded-2xl border border-line bg-canvas/60 p-4 sm:p-5">
@@ -61,8 +81,8 @@ export function KnowledgeChecks({
               <ul className="mt-3 space-y-2">
                 {check.options.map((option, optionIndex) => {
                   const active = choice === option;
-                  const isAnswer = show && key?.answer === option;
-                  const isWrong = show && active && !correct;
+                  const isAnswer = Boolean(show && key && answersMatch(option, key.answer, check.options));
+                  const isWrong = Boolean(show && active && !correct);
                   return (
                     <li key={option}>
                       <button
@@ -107,6 +127,9 @@ export function KnowledgeChecks({
                   <p className={cn("text-sm font-semibold", correct ? "text-emerald-700" : "text-danger")}>
                     {correct ? "Correct" : "Not quite"}
                   </p>
+                ) : null}
+                {show && !key ? (
+                  <p className="text-sm text-muted">Answer key is not available for this check yet.</p>
                 ) : null}
               </div>
             ) : null}
