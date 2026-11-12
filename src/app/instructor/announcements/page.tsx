@@ -1,4 +1,4 @@
-import { AnnouncementForm } from "@/components/instructor-forms";
+import { AnnouncementForm, DeleteAnnouncementButton } from "@/components/instructor-forms";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
 import { formatWhen } from "@/lib/time";
@@ -16,14 +16,31 @@ export default async function InstructorAnnouncementsPage() {
         <div className="space-y-3">
           {rows.map((item) => (
             <Card key={item.id} className="p-4">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="font-bold">{item.title}</h2>
-                <Badge tone={item.published ? "success" : "neutral"}>{item.published ? "Published" : "Draft"}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge tone={item.published ? "success" : "neutral"}>{item.published ? "Published" : "Draft"}</Badge>
+                  <DeleteAnnouncementButton id={item.id} />
+                </div>
               </div>
               <p className="mt-1 text-xs text-muted">{formatWhen(item.createdAt, user.timezone)}</p>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{item.body}</p>
+              <details className="mt-3 rounded-xl border border-line bg-canvas/40 p-3">
+                <summary className="cursor-pointer text-sm font-semibold text-navy">Edit</summary>
+                <div className="mt-3">
+                  <AnnouncementForm
+                    announcement={{
+                      id: item.id,
+                      title: item.title,
+                      body: item.body,
+                      published: item.published,
+                    }}
+                  />
+                </div>
+              </details>
             </Card>
           ))}
+          {rows.length === 0 ? <p className="text-sm text-muted">No announcements yet.</p> : null}
         </div>
       </div>
       <Card className="h-fit p-5">

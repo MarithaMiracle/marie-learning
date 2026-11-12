@@ -60,6 +60,9 @@ export function LessonEditor({
         });
       }}
     >
+      <p className="rounded-xl bg-slate-50 px-3 py-2 text-sm text-muted">
+        Quick edits: title, publish state, overview, teaching-note markdown, and guide recap. Full session guide sections stay in the printed guide view.
+      </p>
       <Field label="Title">
         <TextInput value={state.title} onChange={(event) => setState((current) => ({ ...current, title: event.target.value }))} />
       </Field>

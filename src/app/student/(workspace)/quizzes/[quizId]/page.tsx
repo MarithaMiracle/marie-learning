@@ -42,18 +42,21 @@ export default async function QuizPage({
   }
 
   const canTake = data.attempts.length === 0 || data.quiz.allowRetakes;
+  const mcqQuestions = data.questions.filter(
+    (question) => question.type === "multiple_choice" || question.type === "true_false" || question.type === "code_reading",
+  );
   if (take === "1" && canTake) {
     return (
       <div>
         <PageHeader
           title={data.quiz.title}
-          description="The quiz is untimed. You can move back and forth before you submit. A refresh clears answers that have not been submitted."
+          description="Multiple-choice quiz. Untimed — move back and forth before you submit. A refresh clears answers that have not been submitted."
         />
         <QuizTaker
           quizId={data.quiz.id}
-          questions={data.questions.map((question) => ({
+          questions={mcqQuestions.map((question) => ({
             id: question.id,
-            type: question.type,
+            type: question.type as "multiple_choice" | "true_false" | "code_reading",
             prompt: question.prompt,
             codeSnippet: question.codeSnippet,
             options: question.options,

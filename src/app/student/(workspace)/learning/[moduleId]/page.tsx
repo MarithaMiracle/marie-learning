@@ -47,30 +47,9 @@ export default async function ModulePage({ params }: { params: Promise<{ moduleI
           );
         })}
       </div>
-      <div className="mt-5 flex flex-wrap gap-3 text-sm font-semibold">
-        {data.assignment ? (
-          data.assignment.locked ? (
-            <span className="inline-flex items-center gap-2 text-muted">
-              Week assignment <LockedBadge reason={data.assignment.lockReason} />
-            </span>
-          ) : (
-            <Link href={`/student/assignments/${data.assignment.id}`} className="text-primary">
-              Week assignment
-            </Link>
-          )
-        ) : null}
-        {data.quiz ? (
-          data.quiz.locked ? (
-            <span className="inline-flex items-center gap-2 text-muted">
-              Week quiz <LockedBadge reason={data.quiz.lockReason} />
-            </span>
-          ) : (
-            <Link href={`/student/quizzes/${data.quiz.id}`} className="text-primary">
-              Week quiz
-            </Link>
-          )
-        ) : null}
-      </div>
+      <p className="mt-5 text-sm leading-6 text-muted">
+        Week assignments and quizzes are in the Assignments and Quizzes sections once you finish this week&apos;s lessons.
+      </p>
     </div>
   );
 }

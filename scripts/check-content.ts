@@ -37,9 +37,13 @@ async function main() {
     if (module.quiz.questions.length < 8 || module.quiz.questions.length > 10) {
       problems.push(`${module.quiz.slug} should have 8 to 10 questions`);
     }
-    const auto = module.quiz.questions.filter((question) => question.type !== "short_answer").length;
+    const auto = module.quiz.questions.filter((question) =>
+      question.type === "multiple_choice" || question.type === "true_false" || question.type === "code_reading",
+    ).length;
     const shorts = module.quiz.questions.filter((question) => question.type === "short_answer").length;
-    if (auto < 5 || shorts < 1) problems.push(`${module.quiz.slug} needs objective questions and a short answer`);
+    if (auto < 8 || shorts > 0) {
+      problems.push(`${module.quiz.slug} must be MCQ-only (got ${auto} auto-gradable, ${shorts} short answer)`);
+    }
     for (const lesson of module.lessons) {
       sessions.add(lesson.sessionNumber);
       const report = assessLessonSeed(lesson);

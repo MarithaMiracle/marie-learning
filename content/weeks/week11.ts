@@ -1686,14 +1686,16 @@ export default function App() {
         points: 2,
       },
       {
-        slug: "week-11-q7",
-        type: "short_answer",
-        prompt:
-          "A page shows the Vite sample instead of the student's footer. What is a likely cause, and which file should they change so Footer appears?",
-        correct: {
-          rubric:
-            "Award full points if the answer says App still renders the sample or does not render Footer, and that App.tsx should import and render the Footer component. Award partial points for only naming the file or only naming the missing render.",
-        },
+        slug: "w11-q9-footer",
+        type: "multiple_choice",
+        prompt: "A page shows the Vite sample instead of the student's footer. What is the likely cause?",
+        options: [
+          { id: "a", text: "Footer.tsx alone is enough; App never needs to change" },
+          { id: "b", text: "App still renders the sample and does not import/render Footer" },
+          { id: "c", text: "Vite blocks custom components permanently" },
+          { id: "d", text: "Footer must be written in CSS only" },
+        ],
+        correct: { optionId: "b" },
         explanation:
           "Creating Footer.tsx does not place it on the page. App, the root component, has to import it and include the Footer tag, replacing the template sample.",
         points: 3,

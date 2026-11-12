@@ -1273,16 +1273,18 @@ console.log(shoppingTotal === "8");`,
         points: 10,
       },
       {
-        slug: "week-06-why-line-totals",
-        type: "short_answer",
-        prompt:
-          "Why is it useful to store each shopping line total in its own const, instead of writing only one long expression for the grand total?",
-        correct: {
-          rubric:
-            "A strong answer says that separate line totals can be logged and checked on their own when the grand total is wrong. It should mention that a long expression hides which price or operator failed. Different wording is fine. An answer that only says shorter code looks nicer, with no mention of checking a part, is incomplete.",
-        },
+        slug: "w6-q9-consts",
+        type: "multiple_choice",
+        prompt: "Why store each shopping line total in its own const instead of one long grand-total expression?",
+        options: [
+          { id: "a", text: "Because JavaScript forbids long expressions" },
+          { id: "b", text: "Because separate line totals are easier to log and check when the total is wrong" },
+          { id: "c", text: "Because const values cannot be added together" },
+          { id: "d", text: "Because shorter code always runs faster" },
+        ],
+        correct: { optionId: "b" },
         explanation:
-          "When a total is wrong, a line const lets you log bread and milk separately and see which one disagrees with your hand maths. One crowded expression forces you to reread every operator at once. Naming the parts is a debugging habit, not decoration.",
+          "When a total is wrong, a line const lets you log bread and milk separately and see which one disagrees with your hand maths. One crowded expression forces you to reread every operator at once.",
         points: 10,
       },
     ],

@@ -1559,13 +1559,15 @@ The card's 320px width includes the 20px padding and the 2px border because of b
       },
       {
         slug: "w4-q9-center",
-        type: "short_answer",
-        prompt:
-          "In two or three sentences, explain how to center a profile card horizontally while leaving the paragraph text left-aligned.",
-        correct: {
-          rubric:
-            "Award full points if the answer sets a width on the card, keeps it as a block, and uses auto for the left and right margins, and if it does not claim that text-align: center is required for the box. Partial points if they mention auto margins but omit the width. No points for only changing the HTML heading.",
-        },
+        type: "multiple_choice",
+        prompt: "How do you center a profile card horizontally while leaving paragraph text left-aligned?",
+        options: [
+          { id: "a", text: "Set text-align: center on the card and remove its width" },
+          { id: "b", text: "Give the card a width and left/right margins of auto" },
+          { id: "c", text: "Change the HTML heading to center" },
+          { id: "d", text: "Use float: left on every paragraph" },
+        ],
+        correct: { optionId: "b" },
         explanation:
           "A block with a width and left and right margins of auto centers in its parent. text-align centers inline text, so leaving it unset keeps the biography left-aligned.",
         points: 2,

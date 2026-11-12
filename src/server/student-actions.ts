@@ -9,7 +9,6 @@ import type { OperatingSystem } from "@/lib/content-types";
 import { withActor } from "@/lib/db/client";
 import {
   assignments,
-  lessonHomework,
   lessonProgress,
   lessons,
   modules,
@@ -228,40 +227,6 @@ export async function saveGeneralNote(input: { id?: string; title: string; body:
       });
     });
     revalidatePath("/student/profile");
-    return { ok: true };
-  } catch (error) {
-    return { ok: false, error: dbErrorMessage(error) };
-  }
-}
-
-export async function saveLessonHomework(lessonId: string, response: string): Promise<ActionResult> {
-  const user = await requireUser("student");
-  const text = response.trim();
-  if (text.length < 10) return { ok: false, error: "Write a little more before submitting this practice." };
-  try {
-    await withActor(user, async (tx) => {
-      await assertLessonOpen(tx, user.id, lessonId);
-      const [existing] = await tx
-        .select()
-        .from(lessonHomework)
-        .where(and(eq(lessonHomework.studentId, user.id), eq(lessonHomework.lessonId, lessonId)))
-        .limit(1);
-      if (!existing) {
-        await tx.insert(lessonHomework).values({
-          id: newId(),
-          lessonId,
-          studentId: user.id,
-          response: text.slice(0, 20000),
-          submittedAt: new Date(),
-        });
-      } else {
-        await tx
-          .update(lessonHomework)
-          .set({ response: text.slice(0, 20000), submittedAt: new Date() })
-          .where(eq(lessonHomework.id, existing.id));
-      }
-    });
-    revalidatePath(`/student/lesson/${lessonId}`);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: dbErrorMessage(error) };

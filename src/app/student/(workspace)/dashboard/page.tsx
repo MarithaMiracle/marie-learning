@@ -34,7 +34,6 @@ import {
 
 import { displayName, requireUser } from "@/lib/auth";
 import { percent } from "@/lib/utils";
-import { formatWhen } from "@/lib/time";
 import {
   getProfile,
   getStudentDashboard,
@@ -390,77 +389,7 @@ export default async function DashboardPage() {
             className="ml-auto text-muted transition group-hover:translate-x-1"
           />
         </Link>
-
-        <Link
-          href="/student/schedule"
-          className="group col-span-2 flex items-center gap-3 rounded-2xl border border-line bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md lg:col-span-1"
-        >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F3ECFA] text-[#9460AD]">
-            <CalendarDays size={21} />
-          </div>
-
-          <div>
-            <p className="text-sm font-bold text-navy">
-              Class schedule
-            </p>
-            <p className="text-xs text-muted">
-              {data.nextClass
-                ? formatWhen(data.nextClass.startsAt, user.timezone)
-                : "No upcoming class scheduled"}
-            </p>
-          </div>
-
-          <ChevronRight
-            size={17}
-            className="ml-auto text-muted transition group-hover:translate-x-1"
-          />
-        </Link>
       </section>
-
-      {/* ==========================================
-          UPCOMING CLASS
-      ========================================== */}
-
-      {data.nextClass && (
-        <section>
-          <Card className="rounded-3xl border border-[#DCEFEB] bg-[#F1F8F7] p-5 shadow-none sm:p-6">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-primary shadow-sm">
-                  <CalendarDays size={23} />
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-primary">
-                    Upcoming live class
-                  </p>
-
-                  <h2 className="mt-1 text-lg font-bold text-navy">
-                    {formatWhen(data.nextClass.startsAt, user.timezone)}
-                  </h2>
-
-                  <p className="mt-1 text-sm text-muted">
-                    {data.nextClass.description ||
-                      "Your instructor will lead this session."}
-                  </p>
-                </div>
-              </div>
-
-              {data.nextClass.meetingUrl && (
-                <a
-                  href={data.nextClass.meetingUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#35A8A1] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#278F88]"
-                >
-                  Join live class
-                  <ArrowRight size={16} />
-                </a>
-              )}
-            </div>
-          </Card>
-        </section>
-      )}
 
       {/* ==========================================
           LEARNING JOURNEY / COURSE CARDS

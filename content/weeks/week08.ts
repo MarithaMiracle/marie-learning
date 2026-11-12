@@ -1355,15 +1355,18 @@ const openTasks = tasks.filter(function (task) {
         points: 10,
       },
       {
-        slug: "week-08-why-plan",
-        type: "short_answer",
-        prompt: "Why write a hand count or pseudocode before trusting filter or sort on a list of three records?",
-        correct: {
-          rubric:
-            "A strong answer says that a small list can be counted or ordered by hand, so a logged length or first item can be checked against that expectation. It should mention that a wrong callback or the default sort can look like a finished program if nobody predicted the result. Different wording is fine. An answer that only says planning is good, with no check against the console, is incomplete.",
-        },
+        slug: "w8-q9-plan",
+        type: "multiple_choice",
+        prompt: "Why write a hand count or pseudocode before trusting filter or sort on three records?",
+        options: [
+          { id: "a", text: "Because filter cannot run without pseudocode comments" },
+          { id: "b", text: "Because a predicted result lets you spot a wrong callback even when nothing throws" },
+          { id: "c", text: "Because arrays of three items are illegal" },
+          { id: "d", text: "Because sort always fails on small lists" },
+        ],
+        correct: { optionId: "b" },
         explanation:
-          "Three records are few enough to count. If you expect two open tasks and the log says three, the filter is wrong even though the script did not throw. The plan gives you that expected number before the method has a chance to confuse you.",
+          "Three records are few enough to count. If you expect two open tasks and the log says three, the filter is wrong even though the script did not throw. The plan gives you that expected number first.",
         points: 10,
       },
     ],

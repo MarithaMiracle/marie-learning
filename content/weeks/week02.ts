@@ -1399,13 +1399,15 @@ ${introductionPage}
       },
       {
         slug: "w2-q9-strong",
-        type: "short_answer",
-        prompt:
-          "In two or three sentences, explain why this course uses the strong element rather than telling you only to make words bold.",
-        correct: {
-          rubric:
-            "Award full points if the answer says strong marks importance and that the bold appearance is only how browsers usually show it. Award partial points if the answer only says it makes text bold. Do not require the word semantic.",
-        },
+        type: "multiple_choice",
+        prompt: "Why does this course use the strong element instead of only telling you to make words bold?",
+        options: [
+          { id: "a", text: "Because bold text is illegal in HTML" },
+          { id: "b", text: "Because strong marks importance; bold is only the usual look" },
+          { id: "c", text: "Because strong is shorter to type than CSS" },
+          { id: "d", text: "Because browsers ignore bold styles" },
+        ],
+        correct: { optionId: "b" },
         explanation:
           "strong records importance in the document. Browsers often use bold letters for that meaning. Later, CSS can change the look without removing the importance.",
         points: 2,

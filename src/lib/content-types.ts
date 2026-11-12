@@ -122,11 +122,13 @@ export type AssignmentSeed = {
   projectGuide?: ProjectGuide | null;
 };
 
+/** Graded quizzes are multiple-choice only (true/false and code-reading use options too). */
 export type QuizQuestionType =
   | "multiple_choice"
   | "true_false"
-  | "short_answer"
-  | "code_reading";
+  | "code_reading"
+  /** @deprecated Legacy seeded questions; filtered out of the student quiz taker. */
+  | "short_answer";
 
 export type QuizQuestionSeed = {
   slug: string;

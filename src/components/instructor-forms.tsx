@@ -8,17 +8,18 @@ import { commonTimeZones } from "@/lib/time";
 import {
   addInstructorNote,
   createStudentAccount,
+  deleteAnnouncement,
   deleteContactMessage,
+  deleteResource,
   inviteStudent,
   moveLesson,
   moveModule,
-  reviewShortAnswer,
   reviewSubmission,
   revokeStudentInvite,
   saveAnnouncement,
-  cancelClass,
-  saveClass,
   saveModule,
+  saveQuizMeta,
+  saveQuizQuestion,
   saveResource,
   setContactMessageHandled,
   setStudentActive,
@@ -321,97 +322,15 @@ export function ReviewForm({ submissionId, points }: { submissionId: string; poi
   );
 }
 
-export function ShortAnswerReview({ answerId, max }: { answerId: string; max: number }) {
-  const router = useRouter();
-  const [pending, start] = useTransition();
-  return (
-    <form
-      className="mt-2 flex flex-wrap items-end gap-2"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        start(async () => {
-          await reviewShortAnswer({
-            answerId,
-            points: Number(data.get("points") ?? 0),
-            comment: String(data.get("comment") ?? ""),
-          });
-          router.refresh();
-        });
-      }}
-    >
-      <Field label={`Points (0–${max})`}><TextInput name="points" type="number" min={0} max={max} defaultValue={max} /></Field>
-      <Field label="Comment"><TextInput name="comment" /></Field>
-      <Button type="submit" size="sm" disabled={pending}>Save mark</Button>
-    </form>
-  );
-}
-
-export function ClassForm({
-  students,
-  lessons,
+export function AnnouncementForm({
+  announcement,
 }: {
-  students: { id: string; name: string }[];
-  lessons: { id: string; title: string }[];
+  announcement?: { id: string; title: string; body: string; published: boolean };
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
-  return (
-    <form
-      className="space-y-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        start(async () => {
-          const result = await saveClass({
-            studentId: String(data.get("studentId")),
-            startsAt: String(data.get("startsAt")),
-            durationMinutes: Number(data.get("duration") ?? 90),
-            meetingUrl: String(data.get("meetingUrl") ?? ""),
-            description: String(data.get("description") ?? ""),
-            sharedNotes: String(data.get("sharedNotes") ?? ""),
-            privateNotes: String(data.get("privateNotes") ?? ""),
-            lessonId: String(data.get("lessonId") ?? ""),
-            status: "scheduled",
-            attendance: "",
-          });
-          if (!result.ok) setError(result.error);
-          else router.refresh();
-        });
-      }}
-    >
-      <Field label="Student">
-        <SelectInput name="studentId" required>
-          {students.map((student) => (
-            <option key={student.id} value={student.id}>{student.name}</option>
-          ))}
-        </SelectInput>
-      </Field>
-      <Field label="Date and time" hint="Interpreted in your time zone."><TextInput name="startsAt" type="datetime-local" required /></Field>
-      <Field label="Duration in minutes"><TextInput name="duration" type="number" defaultValue={90} min={15} max={240} /></Field>
-      <Field label="Meeting link"><TextInput name="meetingUrl" placeholder="https://" /></Field>
-      <Field label="Description"><TextArea name="description" /></Field>
-      <Field label="Notes the student can read"><TextArea name="sharedNotes" /></Field>
-      <Field label="Private notes"><TextArea name="privateNotes" /></Field>
-      <Field label="Related lesson">
-        <SelectInput name="lessonId" defaultValue="">
-          <option value="">None</option>
-          {lessons.map((lesson) => (
-            <option key={lesson.id} value={lesson.id}>{lesson.title}</option>
-          ))}
-        </SelectInput>
-      </Field>
-      {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <Button type="submit" disabled={pending}>{pending ? "Saving" : "Schedule class"}</Button>
-    </form>
-  );
-}
-
-export function AnnouncementForm() {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  const editing = Boolean(announcement?.id);
   return (
     <form
       className="space-y-3"
@@ -420,6 +339,7 @@ export function AnnouncementForm() {
         const data = new FormData(event.currentTarget);
         start(async () => {
           const result = await saveAnnouncement({
+            id: announcement?.id,
             title: String(data.get("title") ?? ""),
             body: String(data.get("body") ?? ""),
             published: data.get("published") === "on",
@@ -429,19 +349,49 @@ export function AnnouncementForm() {
         });
       }}
     >
-      <Field label="Title"><TextInput name="title" required /></Field>
-      <Field label="Message"><TextArea name="body" required /></Field>
-      <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="published" defaultChecked /> Publish to students</label>
+      <Field label="Title"><TextInput name="title" required defaultValue={announcement?.title} /></Field>
+      <Field label="Message"><TextArea name="body" required defaultValue={announcement?.body} /></Field>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="published" defaultChecked={announcement?.published ?? true} /> Publish to students
+      </label>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <Button type="submit" disabled={pending}>Save announcement</Button>
+      <Button type="submit" disabled={pending}>{pending ? "Saving" : editing ? "Update announcement" : "Save announcement"}</Button>
     </form>
   );
 }
 
-export function ResourceForm({ categories }: { categories: string[] }) {
+export function DeleteAnnouncementButton({ id }: { id: string }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="ghost"
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          await deleteAnnouncement(id);
+          router.refresh();
+        })
+      }
+    >
+      {pending ? "Deleting" : "Delete"}
+    </Button>
+  );
+}
+
+export function ResourceForm({
+  categories,
+  resource,
+}: {
+  categories: string[];
+  resource?: { id: string; category: string; title: string; url: string; description: string; published: boolean };
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const editing = Boolean(resource?.id);
   return (
     <form
       className="space-y-3"
@@ -450,11 +400,12 @@ export function ResourceForm({ categories }: { categories: string[] }) {
         const data = new FormData(event.currentTarget);
         start(async () => {
           const result = await saveResource({
+            id: resource?.id,
             category: String(data.get("category")),
             title: String(data.get("title")),
             url: String(data.get("url")),
             description: String(data.get("description")),
-            published: true,
+            published: data.get("published") === "on",
           });
           if (!result.ok) setError(result.error);
           else router.refresh();
@@ -462,14 +413,42 @@ export function ResourceForm({ categories }: { categories: string[] }) {
       }}
     >
       <Field label="Category">
-        <SelectInput name="category">{categories.map((item) => <option key={item}>{item}</option>)}</SelectInput>
+        <SelectInput name="category" defaultValue={resource?.category}>
+          {categories.map((item) => (
+            <option key={item}>{item}</option>
+          ))}
+        </SelectInput>
       </Field>
-      <Field label="Title"><TextInput name="title" required /></Field>
-      <Field label="Link"><TextInput name="url" type="url" required /></Field>
-      <Field label="Description"><TextArea name="description" required /></Field>
+      <Field label="Title"><TextInput name="title" required defaultValue={resource?.title} /></Field>
+      <Field label="Link"><TextInput name="url" type="url" required defaultValue={resource?.url} /></Field>
+      <Field label="Description"><TextArea name="description" required defaultValue={resource?.description} /></Field>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="published" defaultChecked={resource?.published ?? true} /> Visible to students
+      </label>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <Button type="submit" disabled={pending}>Add resource</Button>
+      <Button type="submit" disabled={pending}>{pending ? "Saving" : editing ? "Update resource" : "Add resource"}</Button>
     </form>
+  );
+}
+
+export function DeleteResourceButton({ id }: { id: string }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="ghost"
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          await deleteResource(id);
+          router.refresh();
+        })
+      }
+    >
+      {pending ? "Deleting" : "Delete"}
+    </Button>
   );
 }
 
@@ -503,10 +482,22 @@ export function InstructorSettingsForm({ name, timezone }: { name: string; timez
   );
 }
 
-export function ModuleForm() {
+export function ModuleForm({
+  module,
+}: {
+  module?: {
+    id: string;
+    title: string;
+    description: string;
+    monthLabel: string;
+    weekNumber: number;
+    published: boolean;
+  };
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const editing = Boolean(module?.id);
   return (
     <form
       className="space-y-3"
@@ -515,6 +506,7 @@ export function ModuleForm() {
         const data = new FormData(event.currentTarget);
         start(async () => {
           const result = await saveModule({
+            id: module?.id,
             title: String(data.get("title") ?? ""),
             description: String(data.get("description") ?? ""),
             monthLabel: String(data.get("monthLabel") ?? ""),
@@ -526,34 +518,163 @@ export function ModuleForm() {
         });
       }}
     >
-      <Field label="Title"><TextInput name="title" required /></Field>
-      <Field label="Month label"><TextInput name="monthLabel" placeholder="Month 1 — Computer fundamentals, HTML and CSS" required /></Field>
-      <Field label="Week number"><TextInput name="weekNumber" type="number" min={1} defaultValue={1} /></Field>
-      <Field label="Description"><TextArea name="description" required /></Field>
-      <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="published" /> Published</label>
+      <Field label="Title"><TextInput name="title" required defaultValue={module?.title} /></Field>
+      <Field label="Month label">
+        <TextInput
+          name="monthLabel"
+          placeholder="Month 1 — Computer fundamentals, HTML and CSS"
+          required
+          defaultValue={module?.monthLabel}
+        />
+      </Field>
+      <Field label="Week number">
+        <TextInput name="weekNumber" type="number" min={1} defaultValue={module?.weekNumber ?? 1} />
+      </Field>
+      <Field label="Description"><TextArea name="description" required defaultValue={module?.description} /></Field>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="published" defaultChecked={module?.published} /> Published
+      </label>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <Button type="submit" disabled={pending}>Create module</Button>
+      <Button type="submit" disabled={pending}>{pending ? "Saving" : editing ? "Save week" : "Create week"}</Button>
     </form>
   );
 }
 
-export function CancelClassButton({ classId }: { classId: string }) {
+export function PublishModuleButton({
+  id,
+  title,
+  description,
+  monthLabel,
+  weekNumber,
+  published,
+}: {
+  id: string;
+  title: string;
+  description: string;
+  monthLabel: string;
+  weekNumber: number;
+  published: boolean;
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   return (
     <Button
       type="button"
       size="sm"
-      variant="danger"
+      variant="secondary"
       disabled={pending}
       onClick={() =>
         start(async () => {
-          await cancelClass(classId);
+          await saveModule({ id, title, description, monthLabel, weekNumber, published: !published });
           router.refresh();
         })
       }
     >
-      Cancel class
+      {pending ? "Updating" : published ? "Unpublish" : "Publish"}
     </Button>
+  );
+}
+
+export function QuizMetaForm({
+  quiz,
+}: {
+  quiz: { id: string; title: string; passingScore: number; allowRetakes: boolean; published: boolean };
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        start(async () => {
+          const result = await saveQuizMeta({
+            id: quiz.id,
+            title: String(data.get("title") ?? ""),
+            passingScore: Number(data.get("passingScore") ?? quiz.passingScore),
+            allowRetakes: data.get("allowRetakes") === "on",
+            published: data.get("published") === "on",
+          });
+          if (!result.ok) setError(result.error);
+          else router.refresh();
+        });
+      }}
+    >
+      <Field label="Title"><TextInput name="title" required defaultValue={quiz.title} /></Field>
+      <Field label="Pass mark (%)"><TextInput name="passingScore" type="number" min={1} max={100} defaultValue={quiz.passingScore} /></Field>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="allowRetakes" defaultChecked={quiz.allowRetakes} /> Allow retakes
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="published" defaultChecked={quiz.published} /> Published for students
+      </label>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      <Button type="submit" disabled={pending}>{pending ? "Saving" : "Save quiz settings"}</Button>
+    </form>
+  );
+}
+
+export function QuizQuestionForm({ quizId }: { quizId: string }) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = new FormData(form);
+        const type = String(data.get("type") ?? "multiple_choice") as "multiple_choice" | "true_false" | "code_reading";
+        const options = ["a", "b", "c", "d"]
+          .map((id) => ({ id, text: String(data.get(`option-${id}`) ?? "").trim() }))
+          .filter((item) => item.text.length > 0);
+        const correctOption = String(data.get("correct") ?? "a");
+        start(async () => {
+          const result = await saveQuizQuestion({
+            quizId,
+            type,
+            prompt: String(data.get("prompt") ?? ""),
+            codeSnippet: String(data.get("codeSnippet") ?? "") || undefined,
+            options: type === "true_false" ? [{ id: "true", text: "True" }, { id: "false", text: "False" }] : options,
+            correct:
+              type === "true_false"
+                ? { value: correctOption === "true" }
+                : { optionId: correctOption },
+            explanation: String(data.get("explanation") ?? ""),
+            points: Number(data.get("points") ?? 1),
+          });
+          if (!result.ok) setError(result.error);
+          else {
+            setError(null);
+            form.reset();
+            router.refresh();
+          }
+        });
+      }}
+    >
+      <Field label="Question type">
+        <SelectInput name="type" defaultValue="multiple_choice">
+          <option value="multiple_choice">Multiple choice</option>
+          <option value="true_false">True or false</option>
+          <option value="code_reading">Code reading</option>
+        </SelectInput>
+      </Field>
+      <Field label="Prompt"><TextArea name="prompt" required /></Field>
+      <Field label="Code snippet (optional)"><TextArea name="codeSnippet" className="font-mono text-sm" /></Field>
+      <Field label="Option A"><TextInput name="option-a" /></Field>
+      <Field label="Option B"><TextInput name="option-b" /></Field>
+      <Field label="Option C"><TextInput name="option-c" /></Field>
+      <Field label="Option D"><TextInput name="option-d" /></Field>
+      <Field label="Correct answer" hint="For true/false use true or false. For MCQ use a, b, c, or d.">
+        <TextInput name="correct" defaultValue="a" required />
+      </Field>
+      <Field label="Explanation"><TextArea name="explanation" required /></Field>
+      <Field label="Points"><TextInput name="points" type="number" min={1} max={20} defaultValue={1} /></Field>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      <Button type="submit" disabled={pending}>{pending ? "Adding" : "Add question"}</Button>
+    </form>
   );
 }

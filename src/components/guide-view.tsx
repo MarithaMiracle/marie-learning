@@ -33,7 +33,7 @@ export function GuideView({ guide }: { guide: InstructorGuide }) {
       </Card>
       <Section title="What to explain" items={guide.explain} />
       <Section title="Questions to ask" items={guide.questions} />
-      <Card className="p-5"><h3 className="font-bold">Live demonstration</h3><p className="mt-2 text-sm leading-6">{guide.demonstration}</p></Card>
+      <Card className="p-5"><h3 className="font-bold">Demonstration</h3><p className="mt-2 text-sm leading-6">{guide.demonstration}</p></Card>
       <Card className="p-5"><h3 className="font-bold">Student practice</h3><p className="mt-2 text-sm leading-6">{guide.practice}</p></Card>
       <Section title="Expected outcomes" items={guide.expectedOutcomes} />
       <Card className="p-5">
@@ -44,7 +44,7 @@ export function GuideView({ guide }: { guide: InstructorGuide }) {
           ))}
         </ul>
       </Card>
-      <Card className="p-5"><h3 className="font-bold">Homework</h3><p className="mt-2 text-sm leading-6">{guide.homework}</p></Card>
+      <Card className="p-5"><h3 className="font-bold">Follow-up practice</h3><p className="mt-2 text-sm leading-6">{guide.homework}</p></Card>
       <Card className="p-5"><h3 className="font-bold">Assessment</h3><p className="mt-2 text-sm leading-6">{guide.assessment}</p></Card>
       <Card className="p-5"><h3 className="font-bold">Recap</h3><p className="mt-2 text-sm leading-6">{guide.recap}</p></Card>
       <Card className="p-5">

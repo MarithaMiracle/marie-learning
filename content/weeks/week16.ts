@@ -1277,12 +1277,16 @@ app.listen(3000, () => console.log("API on http://localhost:3000"));
         points: 1,
       },
       {
-        slug: "explain-deploy",
-        type: "short_answer",
-        prompt: "In your own words, what would need to be hosted for someone else to use this task manager when your laptop is off? What is one setting that would change?",
-        correct: {
-          rubric: "A complete answer names the page, the API, and the database as the pieces that would need a host, or clearly describes those three roles. It also names one real change, such as the database host, the password, or the fetch URL no longer being localhost. Do not require a vendor name. Do not look for a comment about future work.",
-        },
+        slug: "w16-q9-host",
+        type: "multiple_choice",
+        prompt: "What needs hosting for others to use this task manager when your laptop is off, and what is one setting that would change?",
+        options: [
+          { id: "a", text: "Only the README; no settings change" },
+          { id: "b", text: "The page, API, and database; e.g. host or API URL leave localhost" },
+          { id: "c", text: "Only the browser bookmark bar" },
+          { id: "d", text: "Only npm; the database can stay on your closed laptop" },
+        ],
+        correct: { optionId: "b" },
         explanation: "The static page, the Node API, and PostgreSQL are the three hosted pieces. A typical change is PGHOST or the page's API address, which would no longer be localhost.",
         points: 2,
       },

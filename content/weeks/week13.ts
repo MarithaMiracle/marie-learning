@@ -1243,12 +1243,16 @@ app.listen(port, () => {
         points: 1,
       },
       {
-        slug: "request-response-words",
-        type: "short_answer",
-        prompt: "In your own words, what is a request and what is a response? Use the greeting server as the example.",
-        correct: {
-          rubric: "A complete answer says a request is the client asking for something, such as GET /api/greeting, and a response is the server's reply, such as a status and a JSON body. An everyday comparison is welcome. Do not require the words header or Express.",
-        },
+        slug: "w13-q9-http",
+        type: "multiple_choice",
+        prompt: "Using the greeting server, what is a request and what is a response?",
+        options: [
+          { id: "a", text: "A request is the JSON body; a response is the browser tab title" },
+          { id: "b", text: "A request is the client asking; a response is the server's reply" },
+          { id: "c", text: "A request is only a password; a response is only a CSS file" },
+          { id: "d", text: "They are two names for the same database row" },
+        ],
+        correct: { optionId: "b" },
         explanation: "A request is the message asking for the greeting. A response is what the server sends back, including the JSON. The pair is the whole HTTP conversation.",
         points: 2,
       },

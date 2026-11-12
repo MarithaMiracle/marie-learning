@@ -1544,14 +1544,16 @@ This solution is a full-mark shape: landmarks are siblings, three sections use h
         points: 1,
       },
       {
-        slug: "w3-q9-why",
-        type: "short_answer",
-        prompt:
-          "In two or three sentences, explain why a contact page should use a header, a main, and a footer instead of three div elements with the same text.",
-        correct: {
-          rubric:
-            "Award full points if the answer says the named elements describe the regions so people and assistive tools can tell the introduction, the primary content, and the closing apart. Partial points if they only say the page looks better or that div is illegal. A div is allowed when no named element fits.",
-        },
+        slug: "w3-q9-landmarks",
+        type: "multiple_choice",
+        prompt: "Why should a contact page use header, main, and footer instead of three div elements with the same text?",
+        options: [
+          { id: "a", text: "Because div elements are banned in HTML" },
+          { id: "b", text: "Because named landmarks describe page regions for people and assistive tools" },
+          { id: "c", text: "Because three divs cannot hold text" },
+          { id: "d", text: "Because footer must always come first" },
+        ],
+        correct: { optionId: "b" },
         explanation:
           "Header, main, and footer are landmarks with meaning. Divisions would show the same words and would not name those jobs for assistive tools or for the next person editing the file.",
         points: 2,

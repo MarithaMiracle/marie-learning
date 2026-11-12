@@ -1359,13 +1359,15 @@ Server: the computer that stores the page`,
       },
       {
         slug: "w1-q9-request",
-        type: "short_answer",
-        prompt:
-          "In two or three sentences, explain what happens when you type a web address and press Enter. Mention the browser and the server.",
-        correct: {
-          rubric:
-            "Award full points if the answer says the browser requests the page and the server sends the page back. Award partial points if only one of those two roles is described. Do not require the words client, HTTP, or DNS.",
-        },
+        type: "multiple_choice",
+        prompt: "What happens when you type a web address and press Enter?",
+        options: [
+          { id: "a", text: "The keyboard stores the page forever" },
+          { id: "b", text: "The browser requests the page and the server sends it back" },
+          { id: "c", text: "The server becomes the browser on your laptop" },
+          { id: "d", text: "The address is only saved as a file name" },
+        ],
+        correct: { optionId: "b" },
         explanation:
           "Typing an address makes the browser send a request. The server that stores the site sends a response, and the browser shows the page. That is the whole story this week needs.",
         points: 2,

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Markdown } from "@/components/markdown-view";
 import { OsInstructions } from "@/components/os-tabs";
 import { CopyButton } from "@/components/copy-button";
+import { KnowledgeChecks } from "@/components/knowledge-checks";
 import { Badge, Card } from "@/components/ui";
 import type { LessonContent, OperatingSystem } from "@/lib/content-types";
 
@@ -9,10 +10,12 @@ export function LessonView({
   content,
   operatingSystem,
   stackedOs = false,
+  knowledgeCheckAnswers = [],
 }: {
   content: LessonContent;
   operatingSystem?: OperatingSystem | null;
   stackedOs?: boolean;
+  knowledgeCheckAnswers?: { id: string; answer: string; explanation: string }[];
 }) {
   return (
     <article className="space-y-6">
@@ -180,44 +183,9 @@ export function LessonView({
       <Card className="p-6 sm:p-8" id="checks">
         <h2 className="text-xl font-bold text-navy">Knowledge checks</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Use these in class or on paper. They are not scored here. The graded quiz is separate, and your instructor has the answer key.
+          Choose an answer, then check it. These practice questions are not graded. The week quiz lives under Quizzes.
         </p>
-        <ol className="mt-5 list-none space-y-4 p-0">
-          {content.knowledgeChecks.map((check, index) => {
-            const format = formatLabel(check.format);
-            const lettered = format === "Multiple choice" || format === "True or false";
-            return (
-              <li key={check.id} className="rounded-2xl border border-line bg-canvas/60 p-4 sm:p-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-navy px-2 text-xs font-bold text-white">
-                    {index + 1}
-                  </span>
-                  <Badge tone="neutral">{format}</Badge>
-                </div>
-                <p className="mt-3 text-[15px] font-semibold leading-6 text-navy">{check.question}</p>
-                {check.options?.length ? (
-                  <ul className="mt-3 space-y-2">
-                    {check.options.map((option, optionIndex) => (
-                      <li
-                        key={option}
-                        className="flex gap-3 rounded-xl border border-line bg-white px-3 py-2.5 text-sm leading-6 text-ink"
-                      >
-                        <span className="w-5 shrink-0 font-bold text-navy">
-                          {lettered ? String.fromCharCode(65 + optionIndex) : "•"}
-                        </span>
-                        <span>{option}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-3 rounded-xl border border-dashed border-line bg-white px-3 py-3 text-sm leading-6 text-muted">
-                    Write a short answer in your notes. Do not submit it on this page.
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+        <KnowledgeChecks checks={content.knowledgeChecks} answers={knowledgeCheckAnswers} />
       </Card>
 
       <Card className="p-6 sm:p-8" id="summary">
@@ -248,7 +216,6 @@ export function LessonToc({ content }: { content: LessonContent }) {
     ["exercises", "Exercises"],
     ["troubleshooting", "Troubleshooting"],
     ["checks", "Knowledge checks"],
-    ["homework", "Homework"],
     ["summary", "Summary"],
   ];
   return (
@@ -269,15 +236,6 @@ function Note({ title, body }: { title: string; body: string }) {
       <p className="mt-1 text-sm leading-6 text-slate-700">{body}</p>
     </div>
   );
-}
-
-function formatLabel(format: string) {
-  const key = format.trim().toLowerCase().replace(/[\s-]+/g, "_");
-  if (key === "multiple_choice" || key === "multiplechoice") return "Multiple choice";
-  if (key === "true_false" || key === "trueorfalse" || key === "true_or_false") return "True or false";
-  if (key === "short_answer" || key === "shortanswer") return "Short answer";
-  if (format === "Multiple choice" || format === "True or false" || format === "Short answer") return format;
-  return format;
 }
 
 function anchor(value: string) {

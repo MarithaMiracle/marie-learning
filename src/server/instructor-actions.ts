@@ -11,8 +11,6 @@ import {
   announcements,
   assignmentSolutions,
   assignments,
-  classPrivateNotes,
-  classSessions,
   instructorGuides,
   instructorNotes,
   lessons,
@@ -32,7 +30,6 @@ import {
 import { dbErrorMessage, type ActionResult } from "@/lib/errors";
 import { isUuid, newId, slugify } from "@/lib/ids";
 import { isHttpUrl } from "@/lib/utils";
-import { zonedTimeToUtc } from "@/lib/time";
 
 async function notify(tx: Tx, userId: string, title: string, body: string, href?: string) {
   await tx.insert(notifications).values({ id: newId(), userId, title, body, href: href ?? null });
@@ -502,88 +499,15 @@ export async function reviewShortAnswer(input: { answerId: string; points: numbe
   }
 }
 
-const classSchema = z.object({
-  id: z.string().optional(),
-  studentId: z.string().uuid(),
-  startsAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
-  durationMinutes: z.coerce.number().int().min(15).max(240),
-  meetingUrl: z.string().trim().max(500),
-  description: z.string().trim().max(2000),
-  sharedNotes: z.string().max(8000),
-  privateNotes: z.string().max(8000),
-  lessonId: z.string().optional(),
-  status: z.enum(["scheduled", "completed", "cancelled"]),
-  attendance: z.enum(["", "present", "absent", "excused"]),
-});
-
-export async function saveClass(input: z.infer<typeof classSchema>): Promise<ActionResult> {
+export async function deleteAnnouncement(id: string): Promise<ActionResult> {
   const user = await requireUser("instructor");
-  const parsed = classSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Check the student, date, and time." };
-  if (parsed.data.meetingUrl && !isHttpUrl(parsed.data.meetingUrl)) {
-    return { ok: false, error: "The meeting link must start with http:// or https://." };
-  }
+  if (!isUuid(id)) return { ok: false, error: "That announcement could not be found." };
   try {
-    const startsAt = zonedTimeToUtc(parsed.data.startsAt, user.timezone || "UTC");
     await withActor(user, async (tx) => {
-      const [student] = await tx.select().from(users).where(eq(users.id, parsed.data.studentId)).limit(1);
-      if (student?.role !== "student") throw new Error("Account not found");
-      const values = {
-        studentId: parsed.data.studentId,
-        instructorId: user.id,
-        startsAt,
-        durationMinutes: parsed.data.durationMinutes,
-        meetingUrl: parsed.data.meetingUrl || null,
-        description: parsed.data.description,
-        sharedNotes: parsed.data.sharedNotes,
-        status: parsed.data.status,
-        attendance: parsed.data.attendance || null,
-        lessonId: parsed.data.lessonId && isUuid(parsed.data.lessonId) ? parsed.data.lessonId : null,
-      };
-      const classId = parsed.data.id && isUuid(parsed.data.id) ? parsed.data.id : newId();
-      if (parsed.data.id && isUuid(parsed.data.id)) {
-        const [existing] = await tx.select().from(classSessions).where(eq(classSessions.id, classId)).limit(1);
-        await tx.update(classSessions).set(values).where(eq(classSessions.id, classId));
-        if (existing) {
-          const timeChanged = existing.startsAt.getTime() !== startsAt.getTime();
-          const statusChanged = existing.status !== parsed.data.status;
-          const meetingChanged = (existing.meetingUrl ?? "") !== (parsed.data.meetingUrl || "");
-          if (parsed.data.status === "cancelled" && statusChanged) {
-            await notify(
-              tx,
-              student.id,
-              "Live class cancelled",
-              parsed.data.description || "A live class on your schedule has been cancelled.",
-              "/student/schedule",
-            );
-          } else if (timeChanged || meetingChanged || (statusChanged && parsed.data.status === "scheduled")) {
-            await notify(
-              tx,
-              student.id,
-              "Live class updated",
-              parsed.data.description || "A live class on your schedule has changed.",
-              "/student/schedule",
-            );
-          }
-        }
-      } else {
-        await tx.insert(classSessions).values({ id: classId, moduleId: null, ...values });
-        await notify(
-          tx,
-          student.id,
-          "Live class scheduled",
-          parsed.data.description || "A new live class has been added to your schedule.",
-          "/student/schedule",
-        );
-      }
-      await tx
-        .insert(classPrivateNotes)
-        .values({ classId, body: parsed.data.privateNotes })
-        .onConflictDoUpdate({ target: classPrivateNotes.classId, set: { body: parsed.data.privateNotes } });
+      await tx.delete(announcements).where(eq(announcements.id, id));
     });
-    revalidatePath("/instructor/schedule");
-    revalidatePath("/student/schedule");
-    revalidateStudentNotices();
+    revalidatePath("/instructor/announcements");
+    revalidatePath("/student/announcements");
     return { ok: true };
   } catch (error) {
     return { ok: false, error: dbErrorMessage(error) };
@@ -709,32 +633,6 @@ export async function updateInstructorSettings(input: { fullName: string; timezo
   }
 }
 
-export async function cancelClass(id: string): Promise<ActionResult> {
-  const user = await requireUser("instructor");
-  if (!isUuid(id)) return { ok: false, error: "That class could not be found." };
-  try {
-    await withActor(user, async (tx) => {
-      const [existing] = await tx.select().from(classSessions).where(eq(classSessions.id, id)).limit(1);
-      await tx.update(classSessions).set({ status: "cancelled" }).where(eq(classSessions.id, id));
-      if (existing && existing.status !== "cancelled") {
-        await notify(
-          tx,
-          existing.studentId,
-          "Live class cancelled",
-          existing.description || "A live class on your schedule has been cancelled.",
-          "/student/schedule",
-        );
-      }
-    });
-    revalidatePath("/instructor/schedule");
-    revalidatePath("/student/schedule");
-    revalidateStudentNotices();
-    return { ok: true };
-  } catch (error) {
-    return { ok: false, error: dbErrorMessage(error) };
-  }
-}
-
 export async function saveQuizMeta(input: {
   id: string;
   title: string;
@@ -768,17 +666,20 @@ export async function saveQuizMeta(input: {
 export async function saveQuizQuestion(input: {
   quizId: string;
   questionId?: string;
-  type: "multiple_choice" | "true_false" | "short_answer" | "code_reading";
+  type: "multiple_choice" | "true_false" | "code_reading";
   prompt: string;
   codeSnippet?: string;
   options: { id: string; text: string }[];
-  correct: { optionId?: string; value?: boolean; rubric?: string };
+  correct: { optionId?: string; value?: boolean };
   explanation: string;
   points: number;
 }): Promise<ActionResult> {
   const user = await requireUser("instructor");
   if (!isUuid(input.quizId) || input.prompt.trim().length < 8 || input.explanation.trim().length < 8) {
     return { ok: false, error: "Add a question and an explanation." };
+  }
+  if (input.type !== "true_false" && input.options.filter((item) => item.text.trim()).length < 2) {
+    return { ok: false, error: "Multiple-choice questions need at least two options." };
   }
   try {
     await withActor(user, async (tx) => {

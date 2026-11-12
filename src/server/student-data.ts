@@ -4,8 +4,7 @@ import { withActor } from "@/lib/db/client";
 import {
   announcements,
   assignments,
-  classSessions,
-  lessonHomework,
+  instructorGuides,
   lessonProgress,
   lessons,
   modules,
@@ -74,12 +73,6 @@ export async function getStudentDashboard(user: CurrentUser) {
     const next = nextIncomplete(ordered, progress) ?? null;
     const currentModule = publishedModules.find((item) => item.id === next?.moduleId) ?? publishedModules[0] ?? null;
     const completed = progress.filter((item) => item.status === "completed" && publishedLessons.some((lesson) => lesson.id === item.lessonId)).length;
-    const upcoming = await tx
-      .select()
-      .from(classSessions)
-      .where(and(eq(classSessions.studentId, user.id), eq(classSessions.status, "scheduled")))
-      .orderBy(asc(classSessions.startsAt));
-    const nextClass = upcoming.find((item) => item.startsAt.getTime() >= Date.now() - 15 * 60 * 1000) ?? null;
     const assignmentRows = await tx.select().from(assignments).orderBy(asc(assignments.sortOrder));
     const submissionRows = await tx
       .select({
@@ -125,7 +118,6 @@ export async function getStudentDashboard(user: CurrentUser) {
       total: publishedLessons.length,
       currentModule,
       next,
-      nextClass,
       pending,
       feedback,
       announcements: announcementRows,
@@ -238,11 +230,6 @@ export async function getLessonDetail(user: CurrentUser, lessonId: string) {
       .from(studentNotes)
       .where(and(eq(studentNotes.studentId, user.id), eq(studentNotes.lessonId, lesson.id)))
       .limit(1);
-    const [homework] = await tx
-      .select()
-      .from(lessonHomework)
-      .where(and(eq(lessonHomework.studentId, user.id), eq(lessonHomework.lessonId, lesson.id)))
-      .limit(1);
     const [assignment] = await tx
       .select({ id: assignments.id, title: assignments.title, published: assignments.published })
       .from(assignments)
@@ -250,6 +237,7 @@ export async function getLessonDetail(user: CurrentUser, lessonId: string) {
       .limit(1);
     const [profile] = await tx.select().from(studentProfiles).where(eq(studentProfiles.userId, user.id)).limit(1);
     const workOpen = isModuleWorkOpen(module.id, ordered, progressRows);
+    const [guide] = await tx.select().from(instructorGuides).where(eq(instructorGuides.lessonId, lesson.id)).limit(1);
     return {
       locked: false as const,
       lockReason: null,
@@ -257,10 +245,10 @@ export async function getLessonDetail(user: CurrentUser, lessonId: string) {
       module,
       progress: progress ?? null,
       note: note ?? null,
-      homework: homework ?? null,
       assignment: assignment?.published
         ? { ...assignment, locked: !workOpen, lockReason: moduleWorkLockReason(module.id, ordered, progressRows) }
         : null,
+      knowledgeCheckAnswers: guide?.content.knowledgeCheckAnswers ?? [],
       previous: index > 0 ? siblings[index - 1] : null,
       next: index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null,
       operatingSystem: profile?.operatingSystem ?? null,
@@ -441,17 +429,6 @@ export async function getStudentQuiz(user: CurrentUser, quizId: string) {
   });
 }
 
-export async function listSchedule(user: CurrentUser) {
-  return withActor(user, async (tx) => {
-    const classes = await tx.select().from(classSessions).where(eq(classSessions.studentId, user.id)).orderBy(asc(classSessions.startsAt));
-    const lessonRows = await tx.select({ id: lessons.id, title: lessons.title }).from(lessons);
-    return classes.map((item) => ({
-      item,
-      lessonTitle: lessonRows.find((lesson) => lesson.id === item.lessonId)?.title ?? null,
-    }));
-  });
-}
-
 export async function listVisibleResources(user: CurrentUser) {
   return withActor(user, async (tx) => tx.select().from(resources).orderBy(asc(resources.sortOrder), asc(resources.title)));
 }
@@ -479,8 +456,8 @@ export async function getProgressReport(user: CurrentUser) {
       .from(submissions)
       .where(eq(submissions.studentId, user.id));
     const attempts = await tx.select().from(quizAttempts).where(eq(quizAttempts.studentId, user.id));
-    const classes = await tx.select().from(classSessions).where(eq(classSessions.studentId, user.id));
-    return { catalogue, submissions: submissionRows, attempts, classes };
+    const passed = attempts.filter((item) => item.passed === true).length;
+    return { catalogue, submissions: submissionRows, attempts, passed };
   });
 }
 

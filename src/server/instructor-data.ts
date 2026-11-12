@@ -5,11 +5,8 @@ import {
   announcements,
   assignmentSolutions,
   assignments,
-  classPrivateNotes,
-  classSessions,
   instructorGuides,
   instructorNotes,
-  lessonHomework,
   lessonProgress,
   lessons,
   modules,
@@ -82,6 +79,15 @@ export async function listContactMessages(user: CurrentUser) {
   });
 }
 
+function latestActivityAt(dates: Array<Date | null | undefined>) {
+  let latest: Date | null = null;
+  for (const date of dates) {
+    if (!date) continue;
+    if (!latest || date.getTime() > latest.getTime()) latest = date;
+  }
+  return latest;
+}
+
 export async function getInstructorDashboard(user: CurrentUser) {
   return withActor(user, async (tx) => {
     const students = await tx.select().from(users).where(eq(users.role, "student")).orderBy(asc(users.fullName));
@@ -89,20 +95,52 @@ export async function getInstructorDashboard(user: CurrentUser) {
     const moduleRows = await tx.select().from(modules);
     const lessonRows = await tx.select({ id: lessons.id, published: lessons.published, moduleId: lessons.moduleId }).from(lessons);
     const submissionRows = await tx.select(submissionSummary).from(submissions).orderBy(desc(submissions.submittedAt));
-    const classes = await tx.select().from(classSessions).orderBy(asc(classSessions.startsAt));
+    const assignmentRows = await tx.select().from(assignments);
     const progress = await tx.select().from(lessonProgress).orderBy(desc(lessonProgress.startedAt)).limit(8);
     const attempts = await tx.select().from(quizAttempts).orderBy(desc(quizAttempts.submittedAt)).limit(8);
-    const waiting = submissionRows.filter((item) => item.status === "submitted");
-    const upcoming = classes.filter((item) => item.status === "scheduled" && item.startsAt.getTime() >= Date.now() - 15 * 60 * 1000).slice(0, 5);
+    const waiting = submissionRows
+      .filter((item) => item.status === "submitted")
+      .map((submission) => ({
+        submission,
+        student: students.find((item) => item.id === submission.studentId) ?? null,
+        assignment: assignmentRows.find((item) => item.id === submission.assignmentId) ?? null,
+      }));
+    const pendingQuizReviews = attempts
+      .filter((item) => item.reviewStatus === "pending_review")
+      .map((attempt) => ({
+        attempt,
+        student: students.find((item) => item.id === attempt.studentId) ?? null,
+      }));
+    const waitingByStudent = new Map<string, number>();
+    for (const item of waiting) {
+      waitingByStudent.set(item.submission.studentId, (waitingByStudent.get(item.submission.studentId) ?? 0) + 1);
+    }
+    const attentionStudents = students
+      .map((student) => {
+        const reasons: string[] = [];
+        if (!student.isActive) reasons.push("Inactive");
+        if (!student.onboardingCompleted) reasons.push("Needs onboarding");
+        const pending = waitingByStudent.get(student.id) ?? 0;
+        if (pending > 0) reasons.push(`${pending} awaiting review`);
+        return {
+          student,
+          profile: profiles.find((item) => item.userId === student.id) ?? null,
+          reasons,
+          pendingReviews: pending,
+        };
+      })
+      .filter((item) => item.reasons.length > 0)
+      .sort((a, b) => b.pendingReviews - a.pendingReviews || a.student.fullName.localeCompare(b.student.fullName));
     return {
       students: students.map((student) => ({
         student,
         profile: profiles.find((item) => item.userId === student.id) ?? null,
       })),
+      attentionStudents,
       moduleCount: moduleRows.length,
       publishedLessons: lessonRows.filter((item) => item.published).length,
       waiting,
-      upcoming,
+      pendingQuizReviews,
       recentProgress: progress,
       recentAttempts: attempts,
       lessonTitles: await tx.select({ id: lessons.id, title: lessons.title }).from(lessons),
@@ -116,16 +154,29 @@ export async function listStudents(user: CurrentUser) {
     const students = await tx.select().from(users).where(eq(users.role, "student")).orderBy(asc(users.fullName));
     const profiles = await tx.select().from(studentProfiles);
     const progress = await tx.select().from(lessonProgress);
+    const submissionRows = await tx.select(submissionSummary).from(submissions);
+    const attempts = await tx.select().from(quizAttempts);
     const lessonRows = await tx.select({ id: lessons.id, published: lessons.published }).from(lessons);
     const publishedIds = lessonRows.filter((item) => item.published).map((item) => item.id);
     return students.map((student) => {
       const rows = progress.filter((item) => item.studentId === student.id);
       const completed = rows.filter((item) => item.status === "completed" && publishedIds.includes(item.lessonId)).length;
+      const studentSubmissions = submissionRows.filter((item) => item.studentId === student.id);
+      const studentAttempts = attempts.filter((item) => item.studentId === student.id);
+      const awaitingReview = studentSubmissions.filter((item) => item.status === "submitted").length;
+      const lastActivityAt = latestActivityAt([
+        student.updatedAt,
+        ...rows.map((item) => item.completedAt ?? item.startedAt),
+        ...studentSubmissions.map((item) => item.submittedAt),
+        ...studentAttempts.map((item) => item.submittedAt),
+      ]);
       return {
         student,
         profile: profiles.find((item) => item.userId === student.id) ?? null,
         completed,
         total: publishedIds.length,
+        awaitingReview,
+        lastActivityAt,
       };
     });
   });
@@ -146,34 +197,46 @@ export async function getStudentRecord(user: CurrentUser, studentId: string) {
     const feedback = await tx.select().from(submissionFeedback).orderBy(desc(submissionFeedback.createdAt));
     const attempts = await tx.select().from(quizAttempts).where(eq(quizAttempts.studentId, studentId)).orderBy(desc(quizAttempts.submittedAt));
     const quizRows = await tx.select().from(quizzes);
-    const classes = await tx.select().from(classSessions).where(eq(classSessions.studentId, studentId)).orderBy(asc(classSessions.startsAt));
     const notes = await tx.select().from(instructorNotes).where(eq(instructorNotes.studentId, studentId)).orderBy(desc(instructorNotes.createdAt));
-    const homework = await tx.select().from(lessonHomework).where(eq(lessonHomework.studentId, studentId));
+    const publishedLessonIds = lessonRows.filter((lesson) => lesson.published).map((lesson) => lesson.id);
+    const completedLessons = progress.filter(
+      (item) => item.status === "completed" && publishedLessonIds.includes(item.lessonId),
+    ).length;
     const journey = moduleRows.map((module) => {
       const ids = lessonRows.filter((lesson) => lesson.moduleId === module.id && lesson.published).map((lesson) => lesson.id);
       return { module, ...moduleProgress(ids, progress) };
     });
+    const submissionDetails = submissionRows.map((submission) => ({
+      submission,
+      assignment: assignmentRows.find((item) => item.id === submission.assignmentId) ?? null,
+      feedback: feedback.filter((item) => item.submissionId === submission.id),
+    }));
+    const attemptDetails = attempts.map((attempt) => ({
+      attempt,
+      quiz: quizRows.find((item) => item.id === attempt.quizId) ?? null,
+    }));
+    const awaitingSubmissions = submissionDetails.filter((item) => item.submission.status === "submitted");
+    const pendingQuizReviews = attemptDetails.filter((item) => item.attempt.reviewStatus === "pending_review");
+    const lastActivityAt = latestActivityAt([
+      student.updatedAt,
+      ...progress.map((item) => item.completedAt ?? item.startedAt),
+      ...submissionRows.map((item) => item.submittedAt),
+      ...attempts.map((item) => item.submittedAt),
+    ]);
     return {
       student,
       profile: profile ?? null,
       programme: programme ?? null,
       enrollment: enrollment ?? null,
       journey,
-      submissions: submissionRows.map((submission) => ({
-        submission,
-        assignment: assignmentRows.find((item) => item.id === submission.assignmentId) ?? null,
-        feedback: feedback.filter((item) => item.submissionId === submission.id),
-      })),
-      attempts: attempts.map((attempt) => ({
-        attempt,
-        quiz: quizRows.find((item) => item.id === attempt.quizId) ?? null,
-      })),
-      classes,
+      completedLessons,
+      totalLessons: publishedLessonIds.length,
+      lastActivityAt,
+      awaitingSubmissions,
+      pendingQuizReviews,
+      submissions: submissionDetails,
+      attempts: attemptDetails,
       notes,
-      homework: homework.map((item) => ({
-        item,
-        lesson: lessonRows.find((lesson) => lesson.id === item.lessonId) ?? null,
-      })),
     };
   });
 }
@@ -211,13 +274,14 @@ export async function getLessonEditor(user: CurrentUser, lessonId: string) {
   });
 }
 
-export async function listSubmissions(user: CurrentUser, status?: string) {
+export async function listSubmissions(user: CurrentUser, status?: string, assignmentId?: string) {
   return withActor(user, async (tx) => {
     const rows = await tx.select(submissionSummary).from(submissions).orderBy(desc(submissions.submittedAt));
     const studentRows = await tx.select().from(users);
     const assignmentRows = await tx.select().from(assignments);
     return rows
       .filter((row) => !status || status === "all" || row.status === status)
+      .filter((row) => !assignmentId || row.assignmentId === assignmentId)
       .map((submission) => ({
         submission,
         student: studentRows.find((item) => item.id === submission.studentId) ?? null,
@@ -289,21 +353,6 @@ export async function getAttemptReview(user: CurrentUser, attemptId: string) {
     const answers = await tx.select().from(quizAttemptAnswers).where(eq(quizAttemptAnswers.attemptId, attemptId));
     const questions = await tx.select().from(quizQuestions).where(eq(quizQuestions.quizId, attempt.quizId));
     return { attempt, quiz: quiz ?? null, student: student ?? null, answers, questions };
-  });
-}
-
-export async function listClasses(user: CurrentUser) {
-  return withActor(user, async (tx) => {
-    const classes = await tx.select().from(classSessions).orderBy(asc(classSessions.startsAt));
-    const students = await tx.select().from(users);
-    const privateNotes = await tx.select().from(classPrivateNotes);
-    const lessonRows = await tx.select({ id: lessons.id, title: lessons.title }).from(lessons);
-    return classes.map((item) => ({
-      item,
-      student: students.find((student) => student.id === item.studentId) ?? null,
-      privateNotes: privateNotes.find((note) => note.classId === item.id)?.body ?? "",
-      lessonTitle: lessonRows.find((lesson) => lesson.id === item.lessonId)?.title ?? null,
-    }));
   });
 }
 

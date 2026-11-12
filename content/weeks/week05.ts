@@ -1586,16 +1586,18 @@ img {
         points: 10,
       },
       {
-        slug: "week-05-three-widths",
-        type: "short_answer",
-        prompt:
-          "Why should you test a responsive page at three widths, such as a narrow phone, a tablet, and a wide window, instead of checking only the width of your own screen?",
-        correct: {
-          rubric:
-            "A strong answer says that a layout can look right at one width and fail at another. It names at least one real failure, such as sideways scrolling, overlapping regions, text cut off, an image that overflows, or columns that never change. It also says that the author's own screen is only one of the widths a reader may use. Different wording is fine. An answer that only says the page should look nice, with no failure and no second width, is incomplete.",
-        },
+        slug: "w5-q9-widths",
+        type: "multiple_choice",
+        prompt: "Why test a responsive page at phone, tablet, and wide widths instead of only your own screen?",
+        options: [
+          { id: "a", text: "Because browsers only render three widths" },
+          { id: "b", text: "Because a layout can look fine at one width and fail at another" },
+          { id: "c", text: "Because CSS ignores media queries on your laptop" },
+          { id: "d", text: "Because images never resize unless you test three times" },
+        ],
+        correct: { optionId: "b" },
         explanation:
-          "Your own window is one sample. A wrap rule, a media query, and an image limit can each succeed at one width and fail at another. Three widths catch a missing viewport meta element, a query that never runs, and a row that refuses to wrap. The test is there so you can see the break, change the CSS, and test again.",
+          "Your own window is one sample. A wrap rule, a media query, and an image limit can each succeed at one width and fail at another. Three widths catch a missing viewport meta element, a query that never runs, and a row that refuses to wrap.",
         points: 10,
       },
     ],

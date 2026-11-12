@@ -8,7 +8,7 @@ import { submitQuiz, type QuizSubmitResult } from "@/server/student-actions";
 
 type Question = {
   id: string;
-  type: "multiple_choice" | "true_false" | "short_answer" | "code_reading";
+  type: "multiple_choice" | "true_false" | "code_reading";
   prompt: string;
   codeSnippet: string | null;
   options: { id: string; text: string }[] | null;
@@ -35,11 +35,9 @@ export function QuizTaker({ quizId, questions }: { quizId: string; questions: Qu
             Score so far: {result.totalScore} / {result.maxScore}
           </h2>
           <p className="mt-2 text-sm leading-6 text-muted">
-            {result.reviewStatus === "pending_review"
-              ? "Some written answers are waiting for your instructor. The pass mark is not final until those are reviewed."
-              : result.passed
-                ? `You reached the ${result.passingScore}% pass mark.`
-                : `The pass mark is ${result.passingScore}%. You can retake this quiz if retakes are allowed.`}
+            {result.passed
+              ? `You reached the ${result.passingScore}% pass mark.`
+              : `The pass mark is ${result.passingScore}%. You can retake this quiz if retakes are allowed.`}
           </p>
         </Card>
         {result.questions.map((item, number) => (
@@ -108,7 +106,7 @@ export function QuizTaker({ quizId, questions }: { quizId: string; questions: Qu
       <div className="mt-4 space-y-2">
         {question.type === "true_false" ? (
           ["true", "false"].map((value) => (
-            <label key={value} className="flex items-center gap-2 text-sm">
+            <label key={value} className="flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-sm hover:border-primary/40">
               <input
                 type="radio"
                 name={question.id}
@@ -118,15 +116,9 @@ export function QuizTaker({ quizId, questions }: { quizId: string; questions: Qu
               {value === "true" ? "True" : "False"}
             </label>
           ))
-        ) : question.type === "short_answer" ? (
-          <textarea
-            className="min-h-28 w-full rounded-xl border border-line px-3 py-2.5"
-            value={answers[question.id] ?? ""}
-            onChange={(event) => setAnswers((current) => ({ ...current, [question.id]: event.target.value }))}
-          />
         ) : (
           (question.options ?? []).map((option) => (
-            <label key={option.id} className="flex items-start gap-2 text-sm leading-6">
+            <label key={option.id} className="flex cursor-pointer items-start gap-2 rounded-xl border border-line bg-white px-3 py-2.5 text-sm leading-6 hover:border-primary/40">
               <input
                 type="radio"
                 name={question.id}

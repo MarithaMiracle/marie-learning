@@ -1276,12 +1276,16 @@ ORDER BY tasks.created_at;
         points: 1,
       },
       {
-        slug: "key-words",
-        type: "short_answer",
-        prompt: "Explain a primary key and a foreign key using the students and tasks tables.",
-        correct: {
-          rubric: "A complete answer says the primary key identifies one row, such as students.id or tasks.id, and must be unique. The foreign key is tasks.student_id, which stores a student id so the task points at a real student. Wording can vary. A kitchen or notebook comparison is fine if the two ideas stay distinct.",
-        },
+        slug: "w15-q9-keys",
+        type: "multiple_choice",
+        prompt: "Using students and tasks tables, what are a primary key and a foreign key?",
+        options: [
+          { id: "a", text: "Primary key is any text column; foreign key is a password" },
+          { id: "b", text: "Primary key uniquely identifies a row; foreign key stores another table's id" },
+          { id: "c", text: "Foreign keys must be unique; primary keys may repeat" },
+          { id: "d", text: "Both keys are only used for CSS classes" },
+        ],
+        correct: { optionId: "b" },
         explanation: "The primary key is a row's own id. The foreign key is another table's id stored on the task so the relationship can be checked and joined.",
         points: 2,
       },

@@ -1865,13 +1865,16 @@ export const week12: ModuleSeed = {
         points: 2,
       },
       {
-        slug: "week-12-q4",
-        type: "short_answer",
+        slug: "w12-q9-refresh",
+        type: "multiple_choice",
         prompt: "Why does a task added in this week's list disappear after the browser is refreshed?",
-        correct: {
-          rubric:
-            "Award full points if the answer says the list is stored in React state in the browser for this page, and a refresh starts the component again from the initial empty array. Award partial points if the answer only says the list resets or is forgotten, without mentioning state or the new page load.",
-        },
+        options: [
+          { id: "a", text: "React deletes every array on purpose each night" },
+          { id: "b", text: "The list lives in component state, and a refresh starts again from the initial empty array" },
+          { id: "c", text: "The browser cannot store text at all" },
+          { id: "d", text: "useState writes to a database that this lesson clears" },
+        ],
+        correct: { optionId: "b" },
         explanation:
           "useState keeps the tasks while the page stays open. Refreshing runs the app again, and the initial value is an empty array. This lesson does not write the list to a file or to another programme.",
         points: 3,

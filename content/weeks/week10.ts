@@ -1545,14 +1545,16 @@ git log --oneline`,
         points: 2,
       },
       {
-        slug: "week-10-q7",
-        type: "short_answer",
-        prompt:
-          "A classmate will clone your repository onto their own computer. What should the README tell them, and why should the instructions avoid your personal home-folder path?",
-        correct: {
-          rubric:
-            "Award full points if the answer says the README should name the projects and how to open them, and that a home-folder path exists only on one computer so it fails after clone. Award partial points for only one of those two ideas.",
-        },
+        slug: "w10-q9-readme",
+        type: "multiple_choice",
+        prompt: "A classmate will clone your repository. What should the README do, and why avoid a personal home-folder path?",
+        options: [
+          { id: "a", text: "List only your username; home paths work on every computer" },
+          { id: "b", text: "Name the projects and how to open them; home paths break after clone" },
+          { id: "c", text: "Leave the README empty so Git stays small" },
+          { id: "d", text: "Put absolute Windows paths so macOS users are forced to adapt" },
+        ],
+        correct: { optionId: "b" },
         explanation:
           "The README is the front door. Relative paths such as projects/counter/counter.html still work after clone. A path that includes one user's home folder does not.",
         points: 3,

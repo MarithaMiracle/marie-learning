@@ -87,7 +87,7 @@ export function assessLessonContent(
     if (guide.preparation.length < 3) missing.push("Preparation checklist");
     if (guide.difficulties.length < 2) missing.push("Help for struggling students");
     if (guide.questions.length < 3) missing.push("Suggested teaching questions");
-    if (words(guide.demonstration).length < 40) missing.push("Live demonstration notes");
+    if (words(guide.demonstration).length < 40) missing.push("Demonstration notes");
     if (words(guide.practice).length < 40) missing.push("Student practical activity");
     const expectedIds = content.knowledgeChecks.map((item) => item.id).sort();
     const answerIds = guide.knowledgeCheckAnswers.map((item) => item.id).sort();

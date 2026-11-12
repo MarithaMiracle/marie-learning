@@ -1553,13 +1553,16 @@ if (status !== null) {
         points: 2,
       },
       {
-        slug: "week-09-q7",
-        type: "short_answer",
-        prompt: "A counter shows 1 after every click, never 2 or 3. What is a likely mistake in where count is declared, and how should it be fixed?",
-        correct: {
-          rubric:
-            "Award full points if the answer says count is probably declared inside the listener and should be declared outside so the same variable survives across clicks. Award partial points for mentioning reset without saying where the variable should live.",
-        },
+        slug: "w9-q9-count",
+        type: "multiple_choice",
+        prompt: "A counter shows 1 after every click, never 2 or 3. What is the likely mistake?",
+        options: [
+          { id: "a", text: "count is declared inside the listener and resets on every click" },
+          { id: "b", text: "The browser can only store the number 1" },
+          { id: "c", text: "addEventListener only works once per page" },
+          { id: "d", text: "Buttons cannot update variables" },
+        ],
+        correct: { optionId: "a" },
         explanation:
           "A let inside the listener creates a new zero on every click, and adding one always produces 1. The variable needs to live in an outer scope the listener can update.",
         points: 3,

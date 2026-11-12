@@ -10,7 +10,7 @@ export default async function InstructorSettingsPage() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <div>
-        <PageHeader title="Settings" description="Your time zone is used when you schedule a class." />
+        <PageHeader title="Settings" description="Your name and time zone appear across the instructor workspace." />
         <Card className="p-5">
           <InstructorSettingsForm name={user.fullName} timezone={user.timezone} />
         </Card>

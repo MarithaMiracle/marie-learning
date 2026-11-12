@@ -1366,15 +1366,18 @@ Call lineTotal(3, 2) and expect 6. Call lineTotal(1.5, 4) and expect 6. If eithe
         points: 10,
       },
       {
-        slug: "week-07-why-function",
-        type: "short_answer",
-        prompt: "Why call one lineTotal function twice, with different arguments, instead of copying the multiplication into two separate blocks?",
-        correct: {
-          rubric:
-            "A strong answer says that one function is a single place to fix the calculation, and that each call supplies its own arguments so the prices do not have to be written into the formula. It should mention reuse or a return value the caller can log. Different wording is fine. An answer that only says functions are shorter, with no idea of one shared calculation or different inputs, is incomplete.",
-        },
+        slug: "w7-q9-reuse",
+        type: "multiple_choice",
+        prompt: "Why call one lineTotal function twice with different arguments instead of copying the multiplication?",
+        options: [
+          { id: "a", text: "Because functions cannot return numbers" },
+          { id: "b", text: "Because one shared formula can be fixed once and reused with different inputs" },
+          { id: "c", text: "Because arguments are only allowed once per file" },
+          { id: "d", text: "Because copying code always scores higher" },
+        ],
+        correct: { optionId: "b" },
         explanation:
-          "The formula lives once. Bread and milk pass different arguments into the same parameters, and each call returns its own product. If the formula is wrong, you repair the function rather than hunting through copies that may already disagree.",
+          "The formula lives once. Bread and milk pass different arguments into the same parameters, and each call returns its own product. If the formula is wrong, you repair the function rather than hunting through copies.",
         points: 10,
       },
     ],

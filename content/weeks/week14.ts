@@ -1230,12 +1230,16 @@ app.listen(3000, () => {
         points: 1,
       },
       {
-        slug: "param-versus-query",
-        type: "short_answer",
-        prompt: "Explain the difference between a route parameter and a query parameter, using a task API as the example.",
-        correct: {
-          rubric: "A complete answer says a route parameter is part of the path and identifies one resource, such as the id in /api/tasks/3, while a query parameter comes after a question mark and filters or adjusts a request, such as completed=false on the collection. The words can differ. Do not require the student to define CORS.",
-        },
+        slug: "w14-q9-params",
+        type: "multiple_choice",
+        prompt: "What is the difference between a route parameter and a query parameter on a task API?",
+        options: [
+          { id: "a", text: "Route params come after ?; query params sit in the path" },
+          { id: "b", text: "A route param is part of the path (like /api/tasks/3); a query param filters after ?" },
+          { id: "c", text: "They are identical and interchangeable" },
+          { id: "d", text: "Query params identify one resource; route params only style the page" },
+        ],
+        correct: { optionId: "b" },
         explanation: "The path id picks one task. The query string asks for a subset of the collection. Both arrive as text and they answer different questions.",
         points: 2,
       },

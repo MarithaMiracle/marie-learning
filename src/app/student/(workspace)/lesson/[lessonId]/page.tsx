@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CompleteLessonButton, HomeworkForm, NoteForm, TouchLesson } from "@/components/lesson-controls";
+import { CompleteLessonButton, NoteForm, TouchLesson } from "@/components/lesson-controls";
 import { LessonPager, LessonToc, LessonView } from "@/components/lesson-view";
 import { LockedContent } from "@/components/locked-content";
 import { Badge, Card } from "@/components/ui";
@@ -60,49 +60,12 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
           <Badge tone={completed ? "success" : "neutral"}>{completed ? "Finished" : data.progress ? "In progress" : "Not started"}</Badge>
         </div>
         <div className="mt-6">
-          <LessonView content={content} operatingSystem={(data.operatingSystem as OperatingSystem | null) ?? "unknown"} />
+          <LessonView
+            content={content}
+            operatingSystem={(data.operatingSystem as OperatingSystem | null) ?? "unknown"}
+            knowledgeCheckAnswers={data.knowledgeCheckAnswers}
+          />
         </div>
-        <Card className="mt-6 p-6" id="homework">
-          <h2 className="text-xl font-bold text-navy">Homework</h2>
-          <p className="mt-3 text-[15px] leading-7">{content.homework.description}</p>
-          <h3 className="mt-4 font-bold">Requirements</h3>
-          <ul className="mt-2 list-disc pl-5 text-sm leading-6">
-            {content.homework.requirements.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <h3 className="mt-4 font-bold">Deliverables</h3>
-          <ul className="mt-2 list-disc pl-5 text-sm leading-6">
-            {content.homework.deliverables.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          <p className="mt-4 text-sm leading-6">
-            <span className="font-bold">How to submit. </span>
-            {content.homework.submission}
-          </p>
-          <h3 className="mt-4 font-bold">How it will be judged</h3>
-          <ul className="mt-2 list-disc pl-5 text-sm leading-6">
-            {content.homework.criteria.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          {content.homework.submissionKind === "module_assignment" && data.assignment ? (
-            data.assignment.locked ? (
-              <p className="mt-4 text-sm text-muted">
-                Week assignment: {data.assignment.title}. {data.assignment.lockReason}
-              </p>
-            ) : (
-              <Link href={`/student/assignments/${data.assignment.id}`} className="mt-4 inline-block font-semibold text-primary">
-                Open the week assignment: {data.assignment.title}
-              </Link>
-            )
-          ) : (
-            <div className="mt-4">
-              <HomeworkForm lessonId={data.lesson.id} initial={data.homework?.response ?? ""} />
-            </div>
-          )}
-        </Card>
         <Card className="mt-6 p-6">
           <NoteForm lessonId={data.lesson.id} initial={data.note?.body ?? ""} />
         </Card>

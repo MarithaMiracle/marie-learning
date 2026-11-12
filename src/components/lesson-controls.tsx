@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button, fieldClass } from "@/components/ui";
-import { saveLessonHomework, saveLessonNote, setLessonProgress } from "@/server/student-actions";
+import { saveLessonNote, setLessonProgress } from "@/server/student-actions";
 
 export function TouchLesson({ lessonId, completed }: { lessonId: string; completed: boolean }) {
   useEffect(() => {
@@ -61,33 +61,6 @@ export function NoteForm({ lessonId, initial }: { lessonId: string; initial: str
       <textarea id="lesson-note" className={fieldClass} value={body} onChange={(event) => setBody(event.target.value)} />
       <Button type="submit" variant="secondary" disabled={pending}>
         {pending ? "Saving" : "Save notes"}
-      </Button>
-      {message ? <p className="text-sm text-muted">{message}</p> : null}
-    </form>
-  );
-}
-
-export function HomeworkForm({ lessonId, initial }: { lessonId: string; initial: string }) {
-  const [body, setBody] = useState(initial);
-  const [message, setMessage] = useState<string | null>(null);
-  const [pending, start] = useTransition();
-  return (
-    <form
-      className="space-y-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        start(async () => {
-          const result = await saveLessonHomework(lessonId, body);
-          setMessage(result.ok ? "Practice submitted. Your instructor can read it." : result.error);
-        });
-      }}
-    >
-      <label className="block text-sm font-semibold" htmlFor="homework-response">
-        Your answer
-      </label>
-      <textarea id="homework-response" className={fieldClass} value={body} onChange={(event) => setBody(event.target.value)} />
-      <Button type="submit" disabled={pending}>
-        {pending ? "Submitting" : "Submit practice"}
       </Button>
       {message ? <p className="text-sm text-muted">{message}</p> : null}
     </form>

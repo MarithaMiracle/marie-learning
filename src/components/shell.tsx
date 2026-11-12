@@ -11,6 +11,7 @@ import {
   ClipboardCheck,
   FileText,
   GraduationCap,
+  Inbox,
   LayoutDashboard,
   Library,
   LogOut,
@@ -41,6 +42,7 @@ const icons: Record<string, LucideIcon> = {
   students: Users,
   curriculum: BookOpen,
   messages: Mail,
+  submissions: Inbox,
 };
 
 export function AppShell({
@@ -129,23 +131,29 @@ export function AppShell({
           </div>
 
           <div className="flex items-center gap-4">
-            {isStudent ? (
-              <Link
-                href="/student/notifications"
-                className={cn(
-                  "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors",
-                  noticeCount > 0 ? "bg-primary/10 text-navy" : "text-muted hover:bg-slate-100 hover:text-navy",
-                )}
-                aria-label={noticeCount > 0 ? `${noticeCount} new notifications` : "Notifications"}
-              >
-                <Bell className="h-5 w-5" aria-hidden="true" />
-                {noticeCount > 0 ? (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-navy ring-2 ring-white">
-                    {noticeCount}
-                  </span>
-                ) : null}
-              </Link>
-            ) : null}
+            <Link
+              href={isStudent ? "/student/notifications" : "/instructor/messages"}
+              className={cn(
+                "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                noticeCount > 0 ? "bg-primary/10 text-navy" : "text-muted hover:bg-slate-100 hover:text-navy",
+              )}
+              aria-label={
+                isStudent
+                  ? noticeCount > 0
+                    ? `${noticeCount} new notifications`
+                    : "Notifications"
+                  : noticeCount > 0
+                    ? `${noticeCount} new messages`
+                    : "Messages"
+              }
+            >
+              {isStudent ? <Bell className="h-5 w-5" aria-hidden="true" /> : <Mail className="h-5 w-5" aria-hidden="true" />}
+              {noticeCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-navy ring-2 ring-white">
+                  {noticeCount}
+                </span>
+              ) : null}
+            </Link>
 
             <div className="hidden items-center gap-3 border-l border-line pl-4 sm:flex">
               <div className="text-right">
@@ -201,7 +209,6 @@ export const studentNav = [
   { href: "/student/assignments", label: "Assignments", icon: "assignments" },
   { href: "/student/quizzes", label: "Quizzes", icon: "quizzes" },
   { href: "/student/progress", label: "Progress", icon: "progress" },
-  { href: "/student/schedule", label: "Schedule", icon: "schedule" },
   { href: "/student/resources", label: "Resources", icon: "resources" },
   { href: "/student/announcements", label: "Announcements", icon: "announcements" },
   { href: "/student/notifications", label: "Notifications", icon: "notifications" },
@@ -214,12 +221,9 @@ export const instructorNav = [
   { href: "/instructor/students", label: "Students", icon: "students" },
   { href: "/instructor/messages", label: "Messages", icon: "messages" },
   { href: "/instructor/curriculum", label: "Curriculum", icon: "curriculum" },
-  { href: "/instructor/modules", label: "Modules", icon: "learn" },
-  { href: "/instructor/lessons", label: "Lessons", icon: "assignments" },
   { href: "/instructor/assignments", label: "Assignments", icon: "assignments" },
-  { href: "/instructor/submissions", label: "Submissions", icon: "quizzes" },
+  { href: "/instructor/submissions", label: "Submissions", icon: "submissions" },
   { href: "/instructor/quizzes", label: "Quizzes", icon: "quizzes" },
-  { href: "/instructor/schedule", label: "Schedule", icon: "schedule" },
   { href: "/instructor/announcements", label: "Announcements", icon: "announcements" },
   { href: "/instructor/resources", label: "Resources", icon: "resources" },
   { href: "/instructor/settings", label: "Settings", icon: "settings" },
